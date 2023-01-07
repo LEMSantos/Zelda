@@ -6,8 +6,12 @@ from pygame import Surface
 class AbstractLevel(metaclass=ABCMeta):
     """Classe abstrata que define o básico de um nível.
 
-    Args:
-        metaclass (ABCMeta, optional): define a classe como abstrata
+    Essa classe gerencia os diferentes elementos que são visíveis ou
+    invisiveis na tela. Os elementos invisíveis funcionam como
+    obstáculos para o player.
+
+    A classe também lida com inputs específicos do nível, como menus e
+    interações do player com o mapa.
     """
 
     def __init__(self, screen: Surface) -> None:
