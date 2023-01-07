@@ -24,7 +24,6 @@ class Tile(Sprite):
         """
         super().__init__(groups)
 
-        self.image = load_image(
-            f"{BASE_PATH}/graphics/test/rock.png"
-        ).convert_alpha()
+        self.image = load_image(f"{BASE_PATH}/graphics/test/rock.png")
+        self.image = self.image.convert_alpha()
         self.rect = self.image.get_rect(topleft=position)
