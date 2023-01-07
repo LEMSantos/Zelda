@@ -28,7 +28,7 @@ class Game:
         # Setup geral
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
-        self.current_level = MainLevel(self.sreen)
+        self.current_level = MainLevel(self.screen)
 
         # Título da janela
         pygame.display.set_caption(GAME_TITLE)
