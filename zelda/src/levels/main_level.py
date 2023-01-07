@@ -7,6 +7,8 @@ from zelda.src.elements.map.tile import Tile
 
 
 class MainLevel(AbstractLevel):
+    """Level principal, o primeiro quando o jogo começa.
+    """
 
     def __init__(self, screen: pygame.Surface) -> None:
         super().__init__(screen)
@@ -19,6 +21,9 @@ class MainLevel(AbstractLevel):
         self.__create_map()
 
     def __create_map(self) -> None:
+        """Método que instância os elementos do mapa em seus devidos
+        grupos de sprites.
+        """
         for i, row in enumerate(WORLD_MAP):
             for j, tile in enumerate(row):
                 x = j * TILESIZE
