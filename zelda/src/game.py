@@ -2,6 +2,7 @@ import sys
 
 import pygame
 
+from zelda.src.levels.main_level import MainLevel
 from zelda.src.settings import (
     GAME_TITLE,
     SCREEN_WIDTH,
@@ -27,6 +28,7 @@ class Game:
         # Setup geral
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         self.clock = pygame.time.Clock()
+        self.current_level = MainLevel()
 
         # Título da janela
         pygame.display.set_caption(GAME_TITLE)
@@ -48,6 +50,8 @@ class Game:
             self.__handle_events()
 
             self.screen.fill('black')
-            self.clock.tick(FPS)
+            self.current_level.run(self.screen)
 
             pygame.display.update()
+
+            self.clock.tick(FPS)
