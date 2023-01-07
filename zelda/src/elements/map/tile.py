@@ -7,10 +7,21 @@ from zelda.src.settings import BASE_PATH
 
 
 class Tile(Sprite):
+    """Sprite que representa um único quadrado do jogo.
+    """
 
     def __init__(self,
                  position: Tuple[float, float],
                  groups: Union[List[AbstractGroup], AbstractGroup]) -> None:
+        """Faz o setup básico do tile
+
+        Args:
+            position (Tuple[float, float]):
+                posição do tile na tela, em pixels
+            groups (Union[List[AbstractGroup], AbstractGroup]):
+                grupos que o tile deve pertencer quando for utilizado no
+                jogo
+        """
         super().__init__(groups)
 
         self.image = load_image(
