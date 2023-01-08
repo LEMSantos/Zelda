@@ -29,12 +29,51 @@ class MainLevel(AbstractLevel):
                 x = j * TILESIZE
                 y = i * TILESIZE
 
-                if tile == 'p':
-                    Player((x, y), [self.visible_sprites])
+                if tile == "p":
+                    self.player = Player(
+                        position=(x, y),
+                        groups=[self.visible_sprites],
+                        handle_collisions=self.__handle_collisions,
+                    )
+
                     continue
 
-                if tile == 'x':
+                if tile == "x":
                     Tile((x, y), [self.visible_sprites, self.obstacle_sprites])
+
+    def __handle_collisions(self, direction: str) -> None:
+        """Método para lidar com colisões.
+
+        Colisões podem ser horizontais ou verticais, cada uma delas
+        possui uma forma de tratamento diferente e não devem ser
+        executadas simultâneamente no mesmo ciclo.
+
+        Args:
+            direction (str):
+                direção da colisão, 'vertical' ou 'horizontal'
+        """
+        for sprite in self.obstacle_sprites.sprites():
+            if (hasattr(sprite, "hitbox")
+                    and self.player.hitbox.colliderect(sprite.hitbox)):
+                # Impede os objetos de se transporem horizontalmente
+                if direction == "horizontal":
+                    if self.player.direction.x > 0:
+                        self.player.hitbox.right = sprite.hitbox.left
+
+                    if self.player.direction.x < 0:
+                        self.player.hitbox.left = sprite.hitbox.right
+
+                    self.player.rect.centerx = self.player.hitbox.centerx
+
+                # Impede os objetos de se transporem verticalmente
+                if direction == "vertical":
+                    if self.player.direction.y > 0:
+                        self.player.hitbox.bottom = sprite.hitbox.top
+
+                    if self.player.direction.y < 0:
+                        self.player.hitbox.top = sprite.hitbox.bottom
+
+                    self.player.rect.centery = self.player.hitbox.centery
 
     def run(self) -> None:
         self.visible_sprites.update()
