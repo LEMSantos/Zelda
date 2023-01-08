@@ -49,7 +49,7 @@ class Game:
         while True:
             self.__handle_events()
 
-            self.screen.fill('black')
+            self.screen.fill("black")
             self.current_level.run()
 
             pygame.display.update()
