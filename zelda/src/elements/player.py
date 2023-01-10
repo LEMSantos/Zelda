@@ -74,7 +74,7 @@ class Player(Sprite):
         self.status = "down_idle"
 
         # Colisão
-        self.hitbox = self.rect.copy().inflate((-5, -20))
+        self.hitbox = self.rect.copy().inflate((0, -26))
 
     def __handle_inputs(self) -> None:
         """Captura as entradas do usuário para o player

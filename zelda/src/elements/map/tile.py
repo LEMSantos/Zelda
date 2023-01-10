@@ -30,4 +30,4 @@ class Tile(Sprite):
         self.rect = self.image.get_rect(topleft=position)
 
         # Colisão
-        self.hitbox = self.rect.copy().inflate((-5, -5))
+        self.hitbox = self.rect.copy().inflate((0, -10))
