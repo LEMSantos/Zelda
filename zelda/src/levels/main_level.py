@@ -2,6 +2,7 @@ import pygame
 
 from zelda.src.levels.abstract_level import AbstractLevel
 from zelda.src.settings import WORLD_MAP, TILESIZE
+from zelda.src.core.camera import CameraGroup
 from zelda.src.elements.player import Player
 from zelda.src.elements.map.tile import Tile
 
@@ -14,7 +15,7 @@ class MainLevel(AbstractLevel):
         super().__init__(screen)
 
         # Setup dos grupos de sprites
-        self.visible_sprites = pygame.sprite.Group()
+        self.visible_sprites = CameraGroup()
         self.obstacle_sprites = pygame.sprite.Group()
 
         # Setup dos sprites
@@ -57,9 +58,11 @@ class MainLevel(AbstractLevel):
                     and self.player.hitbox.colliderect(sprite.hitbox)):
                 # Impede os objetos de se transporem horizontalmente
                 if direction == "horizontal":
+                    # Movendo para a direita
                     if self.player.direction.x > 0:
                         self.player.hitbox.right = sprite.hitbox.left
 
+                    # Movendo para a esquerda
                     if self.player.direction.x < 0:
                         self.player.hitbox.left = sprite.hitbox.right
 
@@ -67,9 +70,11 @@ class MainLevel(AbstractLevel):
 
                 # Impede os objetos de se transporem verticalmente
                 if direction == "vertical":
+                    # Movendo para baixo
                     if self.player.direction.y > 0:
                         self.player.hitbox.bottom = sprite.hitbox.top
 
+                    # Movendo para cima
                     if self.player.direction.y < 0:
                         self.player.hitbox.top = sprite.hitbox.bottom
 
@@ -77,4 +82,4 @@ class MainLevel(AbstractLevel):
 
     def run(self) -> None:
         self.visible_sprites.update()
-        self.visible_sprites.draw(self.display_surface)
+        self.visible_sprites.custom_draw(self.display_surface, self.player)
