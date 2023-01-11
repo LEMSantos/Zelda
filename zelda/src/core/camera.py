@@ -1,10 +1,11 @@
 from typing import Union, Sequence
 
+from pygame.image import load as load_image
 from pygame.sprite import Sprite, Group
 from pygame.math import Vector2
 from pygame import Surface
 
-from zelda.src.settings import SCREEN_WIDTH, SCREEN_HEIGHT
+from zelda.src.settings import SCREEN_WIDTH, SCREEN_HEIGHT, BASE_PATH
 from zelda.src.elements.player import Player
 
 
@@ -23,6 +24,9 @@ class CameraGroup(Group):
         super().__init__(*sprites)
 
         self.offset = Vector2()
+        self.floor_surface = load_image(
+            f"{BASE_PATH}/graphics/tilemap/ground.png").convert()
+        self.floor_rect = self.floor_surface.get_rect(topleft=(0, 0))
 
     def custom_draw(self, surface: Surface, player: Player) -> None:
         """Desenha todos os sprites na tela.
@@ -41,6 +45,12 @@ class CameraGroup(Group):
         # centro da tela sempre
         self.offset.x = player.rect.centerx - SCREEN_WIDTH // 2
         self.offset.y = player.rect.centery - SCREEN_HEIGHT // 2
+
+        # Desenha o sprite do chão antes de qualquer outro sprite
+        surface.blit(
+            self.floor_surface,
+            self.floor_rect.topleft - self.offset,
+        )
 
         # Ordena os sprites pela posição em y para garantir que aqueles
         # que estiverem abaixo serão desenhados por cima para uma falsa
