@@ -1,9 +1,9 @@
 from typing import List, Tuple, Union
 
-from pygame.image import load as load_image
+from pygame import Surface
 from pygame.sprite import Sprite, AbstractGroup
 
-from zelda.src.settings import BASE_PATH
+from zelda.src.settings import TILESIZE
 
 
 class Tile(Sprite):
@@ -12,7 +12,9 @@ class Tile(Sprite):
 
     def __init__(self,
                  position: Tuple[float, float],
-                 groups: Union[List[AbstractGroup], AbstractGroup]) -> None:
+                 groups: Union[List[AbstractGroup], AbstractGroup],
+                 sprite_type: str,
+                 surface: Surface = Surface((TILESIZE, TILESIZE))) -> None:
         """Faz o setup básico do tile
 
         Args:
@@ -24,10 +26,19 @@ class Tile(Sprite):
         """
         super().__init__(groups)
 
+        self.sprite_type = sprite_type
+
         # Gráfico
-        self.image = load_image(f"{BASE_PATH}/graphics/test/rock.png")
+        self.image = surface
         self.image = self.image.convert_alpha()
         self.rect = self.image.get_rect(topleft=position)
+
+        # Corrige o posicionamento do sprite para imagens maiores do que
+        # 64 x 64 px
+        if sprite_type == "object":
+            self.rect = self.image.get_rect(
+                topleft=(position[0], position[1] - TILESIZE),
+            )
 
         # Colisão
         self.hitbox = self.rect.copy().inflate((0, -10))

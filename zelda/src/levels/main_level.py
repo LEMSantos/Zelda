@@ -1,7 +1,10 @@
+from random import choice as random_choice
+
 import pygame
 
+from zelda.src.core.utils import import_csv, import_folder
 from zelda.src.levels.abstract_level import AbstractLevel
-from zelda.src.settings import WORLD_MAP, TILESIZE
+from zelda.src.settings import BASE_PATH, TILESIZE
 from zelda.src.core.camera import CameraGroup
 from zelda.src.elements.player import Player
 from zelda.src.elements.map.tile import Tile
@@ -25,22 +28,53 @@ class MainLevel(AbstractLevel):
         """Método que instância os elementos do mapa em seus devidos
         grupos de sprites.
         """
-        for i, row in enumerate(WORLD_MAP):
-            for j, tile in enumerate(row):
-                x = j * TILESIZE
-                y = i * TILESIZE
+        layouts = {
+            "boundary": import_csv(f"{BASE_PATH}/map/map_FloorBlocks.csv"),
+            "grass": import_csv(f"{BASE_PATH}/map/map_Grass.csv"),
+            "object": import_csv(f"{BASE_PATH}/map/map_Objects.csv"),
+        }
 
-                if tile == "p":
-                    self.player = Player(
-                        position=(x, y),
-                        groups=[self.visible_sprites],
-                        handle_collisions=self.__handle_collisions,
-                    )
+        graphics = {
+            "grass": import_folder(f"{BASE_PATH}/graphics/grass"),
+            "object": import_folder(f"{BASE_PATH}/graphics/objects"),
+        }
 
-                    continue
+        for style, layout in layouts.items():
+            for i, row in enumerate(layout):
+                for j, tile in enumerate(row):
+                    if tile != "-1":
+                        x = j * TILESIZE
+                        y = i * TILESIZE
 
-                if tile == "x":
-                    Tile((x, y), [self.visible_sprites, self.obstacle_sprites])
+                        if style == "boundary":
+                            Tile(
+                                position=(x, y),
+                                groups=[self.obstacle_sprites],
+                                sprite_type="invisible",
+                            )
+
+                        if style in ["grass", "object"]:
+                            surface = (
+                                random_choice(graphics[style])
+                                if style == "grass" else
+                                graphics[style][int(tile)]
+                            )
+
+                            Tile(
+                                position=(x, y),
+                                groups=[
+                                    self.visible_sprites,
+                                    self.obstacle_sprites,
+                                ],
+                                sprite_type=style,
+                                surface=surface,
+                            )
+
+        self.player = Player(
+            position=(2000, 1430),
+            groups=[self.visible_sprites],
+            handle_collisions=self.__handle_collisions,
+        )
 
     def __handle_collisions(self, direction: str) -> None:
         """Método para lidar com colisões.
