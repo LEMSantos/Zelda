@@ -28,12 +28,16 @@ class MainLevel(AbstractLevel):
         """Método que instância os elementos do mapa em seus devidos
         grupos de sprites.
         """
+        # Mapeia os layouts com o posicionamento dos elementos em cada
+        # camada do mapa
         layouts = {
             "boundary": import_csv(f"{BASE_PATH}/map/map_FloorBlocks.csv"),
             "grass": import_csv(f"{BASE_PATH}/map/map_Grass.csv"),
             "object": import_csv(f"{BASE_PATH}/map/map_Objects.csv"),
         }
 
+        # Mapeia os assets representando cada elemento especificado
+        # no layout
         graphics = {
             "grass": import_folder(f"{BASE_PATH}/graphics/grass"),
             "object": import_folder(f"{BASE_PATH}/graphics/objects"),
@@ -46,6 +50,8 @@ class MainLevel(AbstractLevel):
                         x = j * TILESIZE
                         y = i * TILESIZE
 
+                        # Cria barreiras invisíveis para que o player
+                        # não saia do mapa
                         if style == "boundary":
                             Tile(
                                 position=(x, y),
@@ -53,6 +59,8 @@ class MainLevel(AbstractLevel):
                                 sprite_type="invisible",
                             )
 
+                        # Cria os objectos que são obstáculos visíveis
+                        # para o player
                         if style in ["grass", "object"]:
                             surface = (
                                 random_choice(graphics[style])
