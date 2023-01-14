@@ -91,9 +91,14 @@ class MainLevel(AbstractLevel):
         )
 
     def __create_attack(self) -> None:
+        """Cria a arma selecionada pelo player na tela.
+        """
         self.current_attack = Weapon(self.player, [self.visible_sprites])
 
     def __destroy_attack(self) -> None:
+        """Destroi o ataque corrente se ele já tiver sido previamente
+        criado.
+        """
         if self.current_attack:
             self.current_attack.kill()
 
