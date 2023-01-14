@@ -9,7 +9,7 @@ from pygame import K_UP, K_DOWN, K_LEFT, K_RIGHT, K_SPACE, K_LCTRL, K_q
 from pygame.key import get_pressed as get_pressed_keys
 
 from zelda.src.core.timer import Timer
-from zelda.src.settings import BASE_PATH, WEAPON_DATA
+from zelda.src.settings import BASE_PATH, WEAPON_DATA, PLAYER_BASE_STATS
 from zelda.src.core.utils import import_folder
 
 
@@ -89,7 +89,6 @@ class Player(Sprite):
 
         # Movimento
         self.direction = Vector2()
-        self.speed = 5
 
         # Colisão
         self.hitbox = self.rect.copy().inflate((0, -26))
@@ -104,6 +103,12 @@ class Player(Sprite):
         self.__create_attack = create_attack
         self.weapon_index = 0
         self.weapon = list(WEAPON_DATA.keys())[self.weapon_index]
+
+        # Estatísticas
+        self.health = PLAYER_BASE_STATS["health"]
+        self.energy = PLAYER_BASE_STATS["energy"]
+        self.speed = PLAYER_BASE_STATS["speed"]
+        self.exp = 100
 
     def __import_assets(self) -> None:
         """importa todos os assets do player presentes na pasta
