@@ -9,6 +9,7 @@ from zelda.src.settings import BASE_PATH, TILESIZE
 from zelda.src.core.camera import CameraGroup
 from zelda.src.elements.player import Player
 from zelda.src.elements.map.tile import Tile
+from zelda.src.elements.ui import UI
 
 
 class MainLevel(AbstractLevel):
@@ -27,6 +28,9 @@ class MainLevel(AbstractLevel):
 
         # Sprites de ataque
         self.current_attack = None
+
+        # Interface do usuário
+        self.ui = UI()
 
     def __create_map(self) -> None:
         """Método que instância os elementos do mapa em seus devidos
@@ -145,3 +149,5 @@ class MainLevel(AbstractLevel):
     def run(self) -> None:
         self.visible_sprites.update()
         self.visible_sprites.custom_draw(self.display_surface, self.player)
+
+        self.ui.display(self.player)
