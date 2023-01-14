@@ -4,6 +4,7 @@ import pygame
 
 from zelda.src.core.utils import import_csv, import_folder
 from zelda.src.levels.abstract_level import AbstractLevel
+from zelda.src.elements.weapon.weapon import Weapon
 from zelda.src.settings import BASE_PATH, TILESIZE
 from zelda.src.core.camera import CameraGroup
 from zelda.src.elements.player import Player
@@ -23,6 +24,9 @@ class MainLevel(AbstractLevel):
 
         # Setup dos sprites
         self.__create_map()
+
+        # Sprites de ataque
+        self.current_attack = None
 
     def __create_map(self) -> None:
         """Método que instância os elementos do mapa em seus devidos
@@ -82,7 +86,18 @@ class MainLevel(AbstractLevel):
             position=(2000, 1430),
             groups=[self.visible_sprites],
             handle_collisions=self.__handle_collisions,
+            create_attack=self.__create_attack,
+            destroy_attack=self.__destroy_attack,
         )
+
+    def __create_attack(self) -> None:
+        self.current_attack = Weapon(self.player, [self.visible_sprites])
+
+    def __destroy_attack(self) -> None:
+        if self.current_attack:
+            self.current_attack.kill()
+
+        self.current_attack = None
 
     def __handle_collisions(self, direction: str) -> None:
         """Método para lidar com colisões.
