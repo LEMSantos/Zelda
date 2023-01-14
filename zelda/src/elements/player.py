@@ -1,13 +1,16 @@
+import os
 from dataclasses import dataclass
+from collections import defaultdict
 from typing import Callable, List, Tuple, Union
 
 from pygame.math import Vector2
-from pygame.image import load as load_image
 from pygame.sprite import Sprite, AbstractGroup
-from pygame import K_UP, K_DOWN, K_LEFT, K_RIGHT
+from pygame import K_UP, K_DOWN, K_LEFT, K_RIGHT, K_SPACE, K_LCTRL
 from pygame.key import get_pressed as get_pressed_keys
 
+from zelda.src.core.timer import Timer
 from zelda.src.settings import BASE_PATH
+from zelda.src.core.utils import import_folder
 
 
 @dataclass
@@ -24,6 +27,17 @@ class Movement:
     axis: str
     direction: int
     status: str
+
+
+class Action:
+    """Classe para representar uma ação possível do player
+
+    Args:
+        key (int): código da tecla mapeada na ação
+        name (str): nome da ação que será executada
+    """
+    key: int
+    name: str
 
 
 class Player(Sprite):
@@ -59,10 +73,15 @@ class Player(Sprite):
         super().__init__(groups)
 
         # Setup
+        self.__import_assets()
         self.__handle_collisions = handle_collisions
 
+        # Ações
+        self.status = "down_idle"
+        self.__frame_index = 0
+
         # Gráfico
-        self.image = load_image(f"{BASE_PATH}/graphics/test/player.png")
+        self.image = self.__animations[self.status][self.__frame_index]
         self.image = self.image.convert_alpha()
         self.rect = self.image.get_rect(topleft=position)
 
@@ -70,11 +89,27 @@ class Player(Sprite):
         self.direction = Vector2()
         self.speed = 5
 
-        # Ações
-        self.status = "down_idle"
-
         # Colisão
         self.hitbox = self.rect.copy().inflate((0, -26))
+
+        # Cooldowns
+        self.__cooldowns = {
+            "attack": Timer(400),
+        }
+
+    def __import_assets(self) -> None:
+        """importa todos os assets do player presentes na pasta
+        graphics/player e gera um dicionário de animações.
+        """
+        assets_path = f"{BASE_PATH}/graphics/player"
+
+        _dirs = [name for name in os.listdir(assets_path)
+                 if os.path.isdir(f"{assets_path}/{name}")]
+
+        self.__animations = defaultdict(list)
+
+        for name in _dirs:
+            self.__animations[name] = import_folder(f"{assets_path}/{name}")
 
     def __handle_inputs(self) -> None:
         """Captura as entradas do usuário para o player
@@ -82,14 +117,36 @@ class Player(Sprite):
         self.direction = Vector2()
         pressed_keys = get_pressed_keys()
 
-        # Seta a direção e o status de acordo com a tecla pressionada
-        for movement in self.__ALLOWED_MOVEMENTS:
-            if pressed_keys[movement.key]:
-                setattr(self.direction, movement.axis, movement.direction)
-                self.status = movement.status
+        if not self.__cooldowns["attack"].active:
+            # Seta a direção e o status de acordo com a tecla pressionada
+            for movement in self.__ALLOWED_MOVEMENTS:
+                if pressed_keys[movement.key]:
+                    setattr(self.direction, movement.axis, movement.direction)
+                    self.status = movement.status
+
+            if pressed_keys[K_SPACE] or pressed_keys[K_LCTRL]:
+                self.__frame_index = 0
+                self.__cooldowns["attack"].activate()
+
+    def __get_status(self) -> None:
+        """Atualiza o status do player de acordo com a ação executada.
+        """
+        if self.direction.magnitude() == 0:
+            self.status = self.status.split("_")[0]
+            self.status = f"{self.status}_idle"
+
+        if self.__cooldowns["attack"].active:
+            self.status = self.status.split("_")[0]
+            self.status = f"{self.status}_attack"
+
+    def __update_cooldowns(self):
+        """Atualiza todos os timers utilizados pelo player.
+        """
+        for cooldown in self.__cooldowns.values():
+            cooldown.update()
 
     def __move(self) -> None:
-        """Método para movimentar o player na tela
+        """Método para movimentar o player na tela.
         """
         _direction = self.direction
 
@@ -107,9 +164,22 @@ class Player(Sprite):
         self.rect.centery = self.hitbox.centery
         self.__handle_collisions("vertical")
 
+    def __animate(self) -> None:
+        """Executa a animação do player de acordo com o status atual.
+        """
+        self.__frame_index += 0.1
+        self.__frame_index %= len(self.__animations[self.status])
+
+        self.image = self.__animations[self.status][int(self.__frame_index)]
+        self.rect = self.image.get_rect(center=self.hitbox.center)
+
     def update(self) -> None:
         """Método para atulização do sprite. Esse método é utilizado
         pelo grupo que ele pertence.
         """
         self.__handle_inputs()
+        self.__get_status()
+        self.__update_cooldowns()
+
         self.__move()
+        self.__animate()
