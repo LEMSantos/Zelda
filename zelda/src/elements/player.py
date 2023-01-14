@@ -198,6 +198,10 @@ class Player(Sprite):
         self.image = self.__animations[self.status][int(self.__frame_index)]
         self.rect = self.image.get_rect(center=self.hitbox.center)
 
+    @property
+    def switching_weapon(self):
+        return self.__cooldowns["change_weapon"].active
+
     def update(self) -> None:
         """Método para atulização do sprite. Esse método é utilizado
         pelo grupo que ele pertence.
