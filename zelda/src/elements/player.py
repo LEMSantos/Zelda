@@ -5,11 +5,11 @@ from typing import Callable, List, Tuple, Union
 
 from pygame.math import Vector2
 from pygame.sprite import Sprite, AbstractGroup
-from pygame import K_UP, K_DOWN, K_LEFT, K_RIGHT, K_SPACE, K_LCTRL
+from pygame import K_UP, K_DOWN, K_LEFT, K_RIGHT, K_SPACE, K_LCTRL, K_q
 from pygame.key import get_pressed as get_pressed_keys
 
 from zelda.src.core.timer import Timer
-from zelda.src.settings import BASE_PATH
+from zelda.src.settings import BASE_PATH, WEAPON_DATA
 from zelda.src.core.utils import import_folder
 
 
@@ -57,7 +57,9 @@ class Player(Sprite):
     def __init__(self,
                  position: Tuple[float, float],
                  groups: Union[List[AbstractGroup], AbstractGroup],
-                 handle_collisions: Callable[[str], None]) -> None:
+                 handle_collisions: Callable[[str], None],
+                 create_attack: Callable,
+                 destroy_attack: Callable) -> None:
         """Faz o setup básico do player
 
         Args:
@@ -94,8 +96,14 @@ class Player(Sprite):
 
         # Cooldowns
         self.__cooldowns = {
-            "attack": Timer(400),
+            "attack": Timer(400, destroy_attack),
+            "change_weapon": Timer(200),
         }
+
+        # Armas
+        self.__create_attack = create_attack
+        self.weapon_index = 0
+        self.weapon = list(WEAPON_DATA.keys())[self.weapon_index]
 
     def __import_assets(self) -> None:
         """importa todos os assets do player presentes na pasta
@@ -127,6 +135,18 @@ class Player(Sprite):
             if pressed_keys[K_SPACE] or pressed_keys[K_LCTRL]:
                 self.__frame_index = 0
                 self.__cooldowns["attack"].activate()
+                self.__create_attack()
+
+            if (
+                pressed_keys[K_q]
+                and not self.__cooldowns["change_weapon"].active
+            ):
+                weapons_list = list(WEAPON_DATA.keys())
+
+                self.weapon_index = (self.weapon_index + 1) % len(weapons_list)
+                self.weapon = weapons_list[self.weapon_index]
+
+                self.__cooldowns["change_weapon"].activate()
 
     def __get_status(self) -> None:
         """Atualiza o status do player de acordo com a ação executada.
