@@ -1,10 +1,10 @@
 import os
 from dataclasses import dataclass
 from collections import defaultdict
-from typing import Callable, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union
 
 from pygame.math import Vector2
-from pygame.sprite import Sprite, AbstractGroup
+from pygame.sprite import AbstractGroup
 from pygame.key import get_pressed as get_pressed_keys
 from pygame import (
     K_UP,
@@ -17,8 +17,9 @@ from pygame import (
     K_e
 )
 
-from zelda.src.core.timer import Timer
 from zelda.src.core.utils import import_folder
+from zelda.src.elements.entity import Entity
+from zelda.src.core.timer import Timer
 from zelda.src.settings import (
     BASE_PATH,
     WEAPON_DATA,
@@ -53,7 +54,7 @@ class Action:
     name: str
 
 
-class Player(Sprite):
+class Player(Entity):
     """Sprite que representa o player do jogo.
 
     Essa classe lida com as animações e captura de entradas feitas pelo
@@ -85,38 +86,25 @@ class Player(Sprite):
             handle_collisions (Callable[[str], None]):
                 função para lidar com as colisões horizontais e
                 verticais
+            create_attack (Callable):
+                função para criar o ataque na tela
+            destroy_attack (Callable):
+                função para destruir o ataque previamente criado
+            create_magic (Callable):
+                O mesmo que create_attack só que para magias
         """
-        super().__init__(groups)
+        self.__create_attack = create_attack
+        self.__destroy_attack = destroy_attack
 
-        # Setup
-        self.__import_assets()
-        self.__handle_collisions = handle_collisions
+        super().__init__(position, groups, handle_collisions)
 
-        # Ações
-        self.status = "down_idle"
-        self.__frame_index = 0
-
-        # Gráfico
-        self.image = self.__animations[self.status][self.__frame_index]
-        self.image = self.image.convert_alpha()
-        self.rect = self.image.get_rect(topleft=position)
-
-        # Movimento
-        self.direction = Vector2()
+        # Animações
+        self.animation_speed = 0.1
 
         # Colisão
         self.hitbox = self.rect.copy().inflate((0, -26))
 
-        # Cooldowns
-        self.__cooldowns = {
-            "attack": Timer(400, destroy_attack),
-            "magic": Timer(400),
-            "change_weapon": Timer(200),
-            "change_magic": Timer(200),
-        }
-
         # Armas
-        self.__create_attack = create_attack
         self.weapon_index = 0
         self.weapon = list(WEAPON_DATA.keys())[self.weapon_index]
 
@@ -139,7 +127,7 @@ class Player(Sprite):
         self.speed = self.stats["speed"]
         self.exp = 100
 
-    def __import_assets(self) -> None:
+    def _import_assets(self) -> None:
         """importa todos os assets do player presentes na pasta
         graphics/player e gera um dicionário de animações.
         """
@@ -148,10 +136,10 @@ class Player(Sprite):
         _dirs = [name for name in os.listdir(assets_path)
                  if os.path.isdir(f"{assets_path}/{name}")]
 
-        self.__animations = defaultdict(list)
+        self._animations = defaultdict(list)
 
         for name in _dirs:
-            self.__animations[name] = import_folder(f"{assets_path}/{name}")
+            self._animations[name] = import_folder(f"{assets_path}/{name}")
 
     def __handle_inputs(self) -> None:
         """Captura as entradas do usuário para o player
@@ -160,8 +148,8 @@ class Player(Sprite):
         pressed_keys = get_pressed_keys()
 
         if (
-            not self.__cooldowns["attack"].active
-            and not self.__cooldowns["magic"].active
+            not self._cooldowns["attack"].active
+            and not self._cooldowns["magic"].active
         ):
             # Seta a direção e o status de acordo com a tecla pressionada
             for movement in self.__ALLOWED_MOVEMENTS:
@@ -170,13 +158,13 @@ class Player(Sprite):
                     self.status = movement.status
 
             if pressed_keys[K_SPACE]:
-                self.__frame_index = 0
-                self.__cooldowns["attack"].activate()
+                self._frame_index = 0
+                self._cooldowns["attack"].activate()
                 self.__create_attack()
 
             if pressed_keys[K_LCTRL]:
-                self.__frame_index = 0
-                self.__cooldowns["magic"].activate()
+                self._frame_index = 0
+                self._cooldowns["magic"].activate()
                 self.__create_magic(
                     style=self.magic,
                     strength=(
@@ -188,89 +176,69 @@ class Player(Sprite):
 
             if (
                 pressed_keys[K_q]
-                and not self.__cooldowns["change_weapon"].active
+                and not self._cooldowns["change_weapon"].active
             ):
                 weapons_list = list(WEAPON_DATA.keys())
 
                 self.weapon_index = (self.weapon_index + 1) % len(weapons_list)
                 self.weapon = weapons_list[self.weapon_index]
 
-                self.__cooldowns["change_weapon"].activate()
+                self._cooldowns["change_weapon"].activate()
 
             if (
                 pressed_keys[K_e]
-                and not self.__cooldowns["change_magic"].active
+                and not self._cooldowns["change_magic"].active
             ):
                 magic_list = list(MAGIC_DATA.keys())
 
                 self.magic_index = (self.magic_index + 1) % len(magic_list)
                 self.magic = magic_list[self.magic_index]
 
-                self.__cooldowns["change_magic"].activate()
+                self._cooldowns["change_magic"].activate()
 
-    def __get_status(self) -> None:
+    def _get_status(self) -> None:
         """Atualiza o status do player de acordo com a ação executada.
         """
+        if not hasattr(self, "status"):
+            self.status = "down_idle"
+
         if self.direction.magnitude() == 0:
             self.status = self.status.split("_")[0]
             self.status = f"{self.status}_idle"
 
         if (
-            self.__cooldowns["attack"].active
-            or self.__cooldowns["magic"].active
+            self._cooldowns["attack"].active
+            or self._cooldowns["magic"].active
         ):
             self.status = self.status.split("_")[0]
             self.status = f"{self.status}_attack"
 
-    def __update_cooldowns(self):
-        """Atualiza todos os timers utilizados pelo player.
+    def _create_cooldowns(self) -> Dict[str, Timer]:
+        """Cria os cooldowns necessários para o player
+
+        Returns:
+            Dict[str, Timer]:
+                retorna um dicionário com o nome do cooldown e o timer
+                correspondente
         """
-        for cooldown in self.__cooldowns.values():
-            cooldown.update()
-
-    def __move(self) -> None:
-        """Método para movimentar o player na tela.
-        """
-        _direction = self.direction
-
-        # Garante que a velocidade é constante em qualquer direção
-        if self.direction.magnitude() > 0:
-            _direction = self.direction.normalize()
-
-        # Movimenta horizontalmente
-        self.hitbox.centerx += round(_direction.x * self.speed)
-        self.rect.centerx = self.hitbox.centerx
-        self.__handle_collisions("horizontal")
-
-        # Movimenta verticalmente
-        self.hitbox.centery += round(_direction.y * self.speed)
-        self.rect.centery = self.hitbox.centery
-        self.__handle_collisions("vertical")
-
-    def __animate(self) -> None:
-        """Executa a animação do player de acordo com o status atual.
-        """
-        self.__frame_index += 0.1
-        self.__frame_index %= len(self.__animations[self.status])
-
-        self.image = self.__animations[self.status][int(self.__frame_index)]
-        self.rect = self.image.get_rect(center=self.hitbox.center)
+        return {
+            "attack": Timer(400, self.__destroy_attack),
+            "magic": Timer(400),
+            "change_weapon": Timer(200),
+            "change_magic": Timer(200),
+        }
 
     @property
     def switching_weapon(self):
-        return self.__cooldowns["change_weapon"].active
+        return self._cooldowns["change_weapon"].active
 
     @property
     def switching_magic(self):
-        return self.__cooldowns["change_magic"].active
+        return self._cooldowns["change_magic"].active
 
     def update(self) -> None:
         """Método para atulização do sprite. Esse método é utilizado
         pelo grupo que ele pertence.
         """
         self.__handle_inputs()
-        self.__get_status()
-        self.__update_cooldowns()
-
-        self.__move()
-        self.__animate()
+        super().update()
