@@ -37,12 +37,8 @@ WEAPON_DATA = {
     "sai": {"cooldown": 80, "damage": 10, "graphic": "sai/full.png"},
 }
 
-
-# Player
-PLAYER_BASE_STATS = {
-    "health": 100,
-    "energy": 60,
-    "attack": 10,
-    "magic": 4,
-    "speed": 6,
+# Magias
+MAGIC_DATA = {
+    'flame': {'strength': 5,'cost': 20,'graphic':'flame/fire.png'},
+    'heal' : {'strength': 20,'cost': 10,'graphic':'heal/heal.png'},
 }
