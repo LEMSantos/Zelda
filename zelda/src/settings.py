@@ -81,10 +81,10 @@ MONSTER_DATA = {
     },
     "bamboo": {
         "health": 70,
-        "exp":120,
-        "damage":6,
+        "exp": 120,
+        "damage": 6,
         "attack_type": "leaf_attack",
-        "attack_sound":f"{BASE_PATH}/audio/attack/slash.wav",
+        "attack_sound": f"{BASE_PATH}/audio/attack/slash.wav",
         "speed": 3,
         "resistance": 3,
         "attack_radius": 50,
