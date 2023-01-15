@@ -59,6 +59,15 @@ class UI:
     def __load_graphics(self,
                         prefix: str,
                         data: Dict[str, Any]) -> List[Surface]:
+        """Importa os gráficos de um determinado elemento
+
+        Args:
+            prefix (str): prefixo utilizado para localizar a pasta
+            data (Dict[str, Any]): dados dos elementos
+
+        Returns:
+            List[Surface]: lista de superfícies a partir das imagens
+        """
         return [
             load_image(f"{BASE_PATH}/{prefix}/{item['graphic']}")
             for item in data.values()
