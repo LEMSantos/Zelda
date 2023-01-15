@@ -4,11 +4,11 @@ import pygame
 
 from zelda.src.core.utils import import_csv, import_folder
 from zelda.src.levels.abstract_level import AbstractLevel
-from zelda.src.elements.weapon.weapon import Weapon
+from zelda.src.elements.weapon import Weapon
 from zelda.src.settings import BASE_PATH, TILESIZE
 from zelda.src.core.camera import CameraGroup
 from zelda.src.elements.player import Player
-from zelda.src.elements.map.tile import Tile
+from zelda.src.elements.tile import Tile
 from zelda.src.elements.ui import UI
 
 
