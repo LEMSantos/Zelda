@@ -8,6 +8,15 @@ from zelda.src.core.timer import Timer
 
 
 class Entity(ABC, Sprite):
+    """Classe que representa uma entidade no jogo.
+
+    Entidades podem ser tanto players quando inimgos. Essa classe abarca
+    funcionalidades comuns de ambos.
+
+    Args:
+        ABC (object): transforma a classe em abstrata
+        Sprite (object): herda as funcionalidade de um sprite
+    """
 
     def __init__(self,
                  position: Tuple[float, float],
