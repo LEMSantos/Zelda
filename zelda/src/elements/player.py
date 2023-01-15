@@ -5,12 +5,25 @@ from typing import Callable, List, Tuple, Union
 
 from pygame.math import Vector2
 from pygame.sprite import Sprite, AbstractGroup
-from pygame import K_UP, K_DOWN, K_LEFT, K_RIGHT, K_SPACE, K_LCTRL, K_q
 from pygame.key import get_pressed as get_pressed_keys
+from pygame import (
+    K_UP,
+    K_DOWN,
+    K_LEFT,
+    K_RIGHT,
+    K_SPACE,
+    K_LCTRL,
+    K_q,
+    K_e
+)
 
 from zelda.src.core.timer import Timer
-from zelda.src.settings import BASE_PATH, WEAPON_DATA, PLAYER_BASE_STATS
 from zelda.src.core.utils import import_folder
+from zelda.src.settings import (
+    BASE_PATH,
+    WEAPON_DATA,
+    MAGIC_DATA,
+)
 
 
 @dataclass
@@ -59,7 +72,8 @@ class Player(Sprite):
                  groups: Union[List[AbstractGroup], AbstractGroup],
                  handle_collisions: Callable[[str], None],
                  create_attack: Callable,
-                 destroy_attack: Callable) -> None:
+                 destroy_attack: Callable,
+                 create_magic: Callable) -> None:
         """Faz o setup básico do player
 
         Args:
@@ -96,7 +110,9 @@ class Player(Sprite):
         # Cooldowns
         self.__cooldowns = {
             "attack": Timer(400, destroy_attack),
+            "magic": Timer(400),
             "change_weapon": Timer(200),
+            "change_magic": Timer(200),
         }
 
         # Armas
@@ -104,10 +120,23 @@ class Player(Sprite):
         self.weapon_index = 0
         self.weapon = list(WEAPON_DATA.keys())[self.weapon_index]
 
+        # Magia
+        self.__create_magic = create_magic
+        self.magic_index = 0
+        self.magic = list(MAGIC_DATA.keys())[self.magic_index]
+
         # Estatísticas
-        self.health = PLAYER_BASE_STATS["health"]
-        self.energy = PLAYER_BASE_STATS["energy"]
-        self.speed = PLAYER_BASE_STATS["speed"]
+        self.stats = {
+            "health": 100,
+            "energy": 60,
+            "attack": 10,
+            "magic": 4,
+            "speed": 6,
+        }
+
+        self.health = self.stats["health"]
+        self.energy = self.stats["energy"]
+        self.speed = self.stats["speed"]
         self.exp = 100
 
     def __import_assets(self) -> None:
@@ -130,17 +159,32 @@ class Player(Sprite):
         self.direction = Vector2()
         pressed_keys = get_pressed_keys()
 
-        if not self.__cooldowns["attack"].active:
+        if (
+            not self.__cooldowns["attack"].active
+            and not self.__cooldowns["magic"].active
+        ):
             # Seta a direção e o status de acordo com a tecla pressionada
             for movement in self.__ALLOWED_MOVEMENTS:
                 if pressed_keys[movement.key]:
                     setattr(self.direction, movement.axis, movement.direction)
                     self.status = movement.status
 
-            if pressed_keys[K_SPACE] or pressed_keys[K_LCTRL]:
+            if pressed_keys[K_SPACE]:
                 self.__frame_index = 0
                 self.__cooldowns["attack"].activate()
                 self.__create_attack()
+
+            if pressed_keys[K_LCTRL]:
+                self.__frame_index = 0
+                self.__cooldowns["magic"].activate()
+                self.__create_magic(
+                    style=self.magic,
+                    strength=(
+                        MAGIC_DATA[self.magic]["strength"]
+                        + self.stats["magic"]
+                    ),
+                    cost=MAGIC_DATA[self.magic]["cost"]
+                )
 
             if (
                 pressed_keys[K_q]
@@ -153,6 +197,17 @@ class Player(Sprite):
 
                 self.__cooldowns["change_weapon"].activate()
 
+            if (
+                pressed_keys[K_e]
+                and not self.__cooldowns["change_magic"].active
+            ):
+                magic_list = list(MAGIC_DATA.keys())
+
+                self.magic_index = (self.magic_index + 1) % len(magic_list)
+                self.magic = magic_list[self.magic_index]
+
+                self.__cooldowns["change_magic"].activate()
+
     def __get_status(self) -> None:
         """Atualiza o status do player de acordo com a ação executada.
         """
@@ -160,7 +215,10 @@ class Player(Sprite):
             self.status = self.status.split("_")[0]
             self.status = f"{self.status}_idle"
 
-        if self.__cooldowns["attack"].active:
+        if (
+            self.__cooldowns["attack"].active
+            or self.__cooldowns["magic"].active
+        ):
             self.status = self.status.split("_")[0]
             self.status = f"{self.status}_attack"
 
@@ -201,6 +259,10 @@ class Player(Sprite):
     @property
     def switching_weapon(self):
         return self.__cooldowns["change_weapon"].active
+
+    @property
+    def switching_magic(self):
+        return self.__cooldowns["change_magic"].active
 
     def update(self) -> None:
         """Método para atulização do sprite. Esse método é utilizado

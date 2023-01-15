@@ -1,13 +1,15 @@
+from typing import Any, Dict, List
+
 from pygame.image import load as load_image
 from pygame.draw import rect as draw_rect
 from pygame.display import get_surface
+from pygame import Rect, Surface
 from pygame.font import Font
-from pygame import Rect
 
 from zelda.src.elements.player import Player
 from zelda.src.settings import (
     BASE_PATH,
-    PLAYER_BASE_STATS,
+    MAGIC_DATA,
     TEXT_COLOR,
     UI_BAR_HEIGHT,
     UI_BG_COLOR,
@@ -44,9 +46,22 @@ class UI:
         self.energy_bar_rect = Rect(10, 34, UI_ENERGY_BAR_WIDTH, UI_BAR_HEIGHT)
 
         # Setup das armas
-        self.__weapon_graphics = [
-            load_image(f"{BASE_PATH}/graphics/weapons/{item['graphic']}")
-            for item in WEAPON_DATA.values()
+        self.__weapon_graphics = self.__load_graphics(
+            prefix="graphics/weapons",
+            data=WEAPON_DATA,
+        )
+
+        self.__magic_graphics = self.__load_graphics(
+            prefix="graphics/particles",
+            data=MAGIC_DATA,
+        )
+
+    def __load_graphics(self,
+                        prefix: str,
+                        data: Dict[str, Any]) -> List[Surface]:
+        return [
+            load_image(f"{BASE_PATH}/{prefix}/{item['graphic']}")
+            for item in data.values()
         ]
 
     def show_bar(self,
@@ -129,23 +144,33 @@ class UI:
 
         return bg_rect
 
-    def show_weapon_overlay(self, weapon_index: int, highlight_box: bool):
-        """Mostra na tela a caixa de seleção da arma.
+    def show_overlay(self,
+                     left: int,
+                     top: int,
+                     index: int,
+                     highlight_box: bool,
+                     graphics: List[Surface]) -> None:
+        """Mostra na tela uma caixa de seleção.
 
         Args:
-            weapon_index (int): arma utilizada atualmente pelo player.
+            left (int): posição x do overlay
+            top (int): posição y do overlay
+            index (int): gráfico utilizado atualmente no overlay.
             highlight_box (bool): define se a caixa deve ser destacada.
+            graphics (List[Surface]):
+                lista de superfícies gráficas que devem ser consideradas
+                no overlay
         """
         bg_rect = self.show_selection_box(
-            left=10,
-            top=self.screen.get_height() - UI_ITEM_BOX_SIZE - 10,
+            left=left,
+            top=top,
             highlight=highlight_box,
         )
 
-        weapon_surf = self.__weapon_graphics[weapon_index]
-        weapon_rect = weapon_surf.get_rect(center=bg_rect.center)
+        _surf = graphics[index]
+        _rect = _surf.get_rect(center=bg_rect.center)
 
-        self.screen.blit(weapon_surf, weapon_rect)
+        self.screen.blit(_surf, _rect)
 
     def display(self, player: Player) -> None:
         """Constrói toda a UI do game utilizando as informações do
@@ -156,22 +181,31 @@ class UI:
         """
         self.show_bar(
             current=player.health,
-            max_amount=PLAYER_BASE_STATS["health"],
+            max_amount=player.stats["health"],
             bg_rect=self.health_bar_rect,
             color=UI_HEALTH_COLOR,
         )
 
         self.show_bar(
             current=player.energy,
-            max_amount=PLAYER_BASE_STATS["energy"],
+            max_amount=player.stats["energy"],
             bg_rect=self.energy_bar_rect,
             color=UI_ENERGY_COLOR,
         )
 
         self.show_exp(player.exp)
 
-        self.show_weapon_overlay(player.weapon_index, player.switching_weapon)
-        self.show_selection_box(
+        self.show_overlay(
+            left=10,
+            top=self.screen.get_height() - UI_ITEM_BOX_SIZE - 10,
+            index=player.weapon_index,
+            highlight_box=player.switching_weapon,
+            graphics=self.__weapon_graphics,
+        )
+        self.show_overlay(
             left=80,
-            top=self.screen.get_height() - UI_ITEM_BOX_SIZE - 5
+            top=self.screen.get_height() - UI_ITEM_BOX_SIZE - 5,
+            index=player.magic_index,
+            highlight_box=player.switching_magic,
+            graphics=self.__magic_graphics,
         )

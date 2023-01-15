@@ -92,6 +92,7 @@ class MainLevel(AbstractLevel):
             handle_collisions=self.__handle_collisions,
             create_attack=self.__create_attack,
             destroy_attack=self.__destroy_attack,
+            create_magic=self.__create_magic,
         )
 
     def __create_attack(self) -> None:
@@ -107,6 +108,9 @@ class MainLevel(AbstractLevel):
             self.current_attack.kill()
 
         self.current_attack = None
+
+    def __create_magic(self, style: str, strength: int, cost: int) -> None:
+        print((style, strength, cost))
 
     def __handle_collisions(self, direction: str) -> None:
         """Método para lidar com colisões.
