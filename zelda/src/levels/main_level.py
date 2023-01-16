@@ -1,4 +1,5 @@
 from random import choice as random_choice
+from typing import Tuple, Union
 
 import pygame
 
@@ -8,6 +9,8 @@ from zelda.src.elements.weapon import Weapon
 from zelda.src.settings import BASE_PATH, TILESIZE
 from zelda.src.core.camera import CameraGroup
 from zelda.src.elements.player import Player
+from zelda.src.elements.entity import Entity
+from zelda.src.elements.enemy import Enemy
 from zelda.src.elements.tile import Tile
 from zelda.src.elements.ui import UI
 
@@ -42,6 +45,7 @@ class MainLevel(AbstractLevel):
             "boundary": import_csv(f"{BASE_PATH}/map/map_FloorBlocks.csv"),
             "grass": import_csv(f"{BASE_PATH}/map/map_Grass.csv"),
             "object": import_csv(f"{BASE_PATH}/map/map_Objects.csv"),
+            "entities": import_csv(f"{BASE_PATH}/map/map_Entities.csv"),
         }
 
         # Mapeia os assets representando cada elemento especificado
@@ -49,6 +53,13 @@ class MainLevel(AbstractLevel):
         graphics = {
             "grass": import_folder(f"{BASE_PATH}/graphics/grass"),
             "object": import_folder(f"{BASE_PATH}/graphics/objects"),
+        }
+
+        enemy_names = {
+            "390": "bamboo",
+            "391": "spirit",
+            "392": "raccoon",
+            "393": "squid",
         }
 
         for style, layout in layouts.items():
@@ -86,14 +97,25 @@ class MainLevel(AbstractLevel):
                                 surface=surface,
                             )
 
-        self.player = Player(
-            position=(2000, 1430),
-            groups=[self.visible_sprites],
-            handle_collisions=self.__handle_collisions,
-            create_attack=self.__create_attack,
-            destroy_attack=self.__destroy_attack,
-            create_magic=self.__create_magic,
-        )
+                        if style == "entities":
+                            if tile == "394":
+                                self.player = Player(
+                                    position=(x, y),
+                                    groups=[self.visible_sprites],
+                                    handle_collisions=self.__handle_collisions,
+                                    create_attack=self.__create_attack,
+                                    destroy_attack=self.__destroy_attack,
+                                    create_magic=self.__create_magic,
+                                )
+
+                            if tile in enemy_names.keys():
+                                Enemy(
+                                    position=(x, y),
+                                    groups=[self.visible_sprites],
+                                    handle_collisions=self.__handle_collisions,
+                                    monster_name=enemy_names[tile],
+                                    get_player_pos=self.__get_player_pos
+                                )
 
     def __create_attack(self) -> None:
         """Cria a arma selecionada pelo player na tela.
@@ -152,7 +174,9 @@ class MainLevel(AbstractLevel):
 
                     target.rect.centery = target.hitbox.centery
 
-                    self.player.rect.centery = self.player.hitbox.centery
+    def __get_player_pos(self) -> Union[Tuple[int, int], None]:
+        if hasattr(self, "player"):
+            return self.player.rect.center
 
     def run(self) -> None:
         self.visible_sprites.update()
