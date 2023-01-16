@@ -84,12 +84,12 @@ class Entity(ABC, Sprite):
         # Movimenta horizontalmente
         self.hitbox.centerx += round(_direction.x * speed)
         self.rect.centerx = self.hitbox.centerx
-        self._handle_collisions("horizontal")
+        self._handle_collisions(self, "horizontal")
 
         # Movimenta verticalmente
         self.hitbox.centery += round(_direction.y * speed)
         self.rect.centery = self.hitbox.centery
-        self._handle_collisions("vertical")
+        self._handle_collisions(self, "vertical")
 
     def _animate(self, animation_speed: float) -> None:
         """Executa a animação da entidade de acordo com o status atual.

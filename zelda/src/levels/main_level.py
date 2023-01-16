@@ -112,7 +112,9 @@ class MainLevel(AbstractLevel):
     def __create_magic(self, style: str, strength: int, cost: int) -> None:
         print((style, strength, cost))
 
-    def __handle_collisions(self, direction: str) -> None:
+    def __handle_collisions(self,
+                            target: Entity,
+                            direction: str) -> None:
         """Método para lidar com colisões.
 
         Colisões podem ser horizontais ou verticais, cada uma delas
@@ -125,28 +127,30 @@ class MainLevel(AbstractLevel):
         """
         for sprite in self.obstacle_sprites.sprites():
             if (hasattr(sprite, "hitbox")
-                    and self.player.hitbox.colliderect(sprite.hitbox)):
+                    and target.hitbox.colliderect(sprite.hitbox)):
                 # Impede os objetos de se transporem horizontalmente
                 if direction == "horizontal":
                     # Movendo para a direita
-                    if self.player.direction.x > 0:
-                        self.player.hitbox.right = sprite.hitbox.left
+                    if target.direction.x > 0:
+                        target.hitbox.right = sprite.hitbox.left
 
                     # Movendo para a esquerda
-                    if self.player.direction.x < 0:
-                        self.player.hitbox.left = sprite.hitbox.right
+                    if target.direction.x < 0:
+                        target.hitbox.left = sprite.hitbox.right
 
-                    self.player.rect.centerx = self.player.hitbox.centerx
+                    target.rect.centerx = target.hitbox.centerx
 
                 # Impede os objetos de se transporem verticalmente
                 if direction == "vertical":
                     # Movendo para baixo
-                    if self.player.direction.y > 0:
-                        self.player.hitbox.bottom = sprite.hitbox.top
+                    if target.direction.y > 0:
+                        target.hitbox.bottom = sprite.hitbox.top
 
                     # Movendo para cima
-                    if self.player.direction.y < 0:
-                        self.player.hitbox.top = sprite.hitbox.bottom
+                    if target.direction.y < 0:
+                        target.hitbox.top = sprite.hitbox.bottom
+
+                    target.rect.centery = target.hitbox.centery
 
                     self.player.rect.centery = self.player.hitbox.centery
 
