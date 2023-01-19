@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Literal, Tuple, Union
+from math import sin
 
+from pygame.time import get_ticks as get_time_ticks
 from pygame.sprite import AbstractGroup, Sprite
 from pygame.math import Vector2
 
@@ -10,12 +12,8 @@ from zelda.src.core.timer import Timer
 class Entity(ABC, Sprite):
     """Classe que representa uma entidade no jogo.
 
-    Entidades podem ser tanto players quando inimgos. Essa classe abarca
+    Entidades podem ser tanto players quando inimigos. Essa classe abarca
     funcionalidades comuns de ambos.
-
-    Args:
-        ABC (object): transforma a classe em abstrata
-        Sprite (object): herda as funcionalidade de um sprite
     """
 
     def __init__(self,
@@ -44,7 +42,10 @@ class Entity(ABC, Sprite):
         self.direction = Vector2()
 
         # Cooldowns
-        self._cooldowns = self._create_cooldowns()
+        self._cooldowns = {
+            "invincibility": Timer(300),
+            **self._create_cooldowns()
+        }
 
         # Ações
         self._get_status()
@@ -91,6 +92,13 @@ class Entity(ABC, Sprite):
         self.rect.centery = self.hitbox.centery
         self._handle_collisions(self, "vertical")
 
+    @staticmethod
+    def _weave_value() -> Literal[255, 0]:
+        """Método estático para gerar a oscilação utilizada no flicker.
+        """
+        value = sin(get_time_ticks())
+        return 255 if value >= 0 else 0
+
     def _animate(self, animation_speed: float) -> None:
         """Executa a animação da entidade de acordo com o status atual.
         """
@@ -99,6 +107,18 @@ class Entity(ABC, Sprite):
 
         self.image = self._animations[self.status][int(self._frame_index)]
         self.rect = self.image.get_rect(center=self.hitbox.center)
+
+        self._flicker()
+
+    def _flicker(self) -> None:
+        """Gera o efeito de piscar o sprite enquanto a invencibilidade
+        está ativada.
+        """
+        if self._cooldowns["invincibility"].active:
+            alpha = self._weave_value()
+            self.image.set_alpha(alpha)
+        else:
+            self.image.set_alpha(255)
 
     def update(self) -> None:
         self._get_status()
