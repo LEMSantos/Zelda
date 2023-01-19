@@ -42,12 +42,12 @@ def import_folder(
             como o valor.
     """
     # Função para lidar com o tratamento do dicionário
-    def __handle_dict(surfaces: dict, name: str, surf: Surface) -> None:
-        surfaces[name] = surf
+    def __handle_dict(surfaces_map: dict, name: str, surf: Surface) -> None:
+        surfaces_map[name] = surf
 
     # Função para lidar com o tratamento da lista
-    def __handle_list(surfaces: list, _: Any, surf: Surface) -> None:
-        surfaces.append(surf)
+    def __handle_list(surfaces_map: list, _: Any, surf: Surface) -> None:
+        surfaces_map.append(surf)
 
     # Define qual tratamento deve ser utilizado baseado no parâmetro
     # get_dict
@@ -68,4 +68,9 @@ def import_folder(
 
 
 def reflect_images(frames: List[Surface]) -> List[Surface]:
+    """mapea as imagens de forma refletida em x.
+
+    Args:
+        frames (List[Surface]): lista de imagens que serão refletidas
+    """
     return [flip_surface(frame, True, False) for frame in frames]

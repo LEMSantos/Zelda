@@ -22,7 +22,7 @@ class AbstractLevel(metaclass=ABCMeta):
         além de habilitar features como zoom.
 
         Args:
-            screen (Surface): superfíce em que o nível será desenhado
+            screen (Surface): superfície em que o nível será desenhado
         """
         self.display_surface = screen
 

@@ -11,15 +11,15 @@ from zelda.src.settings import BASE_PATH
 class Weapon(Sprite):
     """Sprite que representa uma arma no jogo.
 
-    Esse sprite lida com a rederização condicional da arma, levando em
+    Esse sprite lida com a renderização condicional da arma, levando em
     consideração tando a direção, quanto a arma atualmente selecionada
     pelo player.
     """
 
     def __init__(self,
-                player: Player,
-                groups: Union[AbstractGroup, List[AbstractGroup]]):
-        """Incializa o sprite da arma selecionada pelo player.
+                 player: Player,
+                 groups: Union[AbstractGroup, List[AbstractGroup]]):
+        """Inicializa o sprite da arma selecionada pelo player.
 
         Args:
             player (Player):
@@ -39,8 +39,8 @@ class Weapon(Sprite):
 
         self.rect = self.image.get_rect(**position)
 
+    @staticmethod
     def __get_weapon_position(
-        self,
         direction: str,
         player: Player,
     ) -> Dict[str, Tuple[float, float]]:
@@ -48,7 +48,7 @@ class Weapon(Sprite):
 
         Args:
             direction (str): direção que a arma deve ser posicionada.
-            player (Player): instầncia do player.
+            player (Player): instancia do player.
 
         Returns:
             Dict[str, Tuple[float, float]]:
@@ -69,7 +69,8 @@ class Weapon(Sprite):
 
         return {"midtop": player.rect.midbottom + x_offset}
 
-    def __get_asset_path(self, direction: str, weapon: str) -> str:
+    @staticmethod
+    def __get_asset_path(direction: str, weapon: str) -> str:
         """Monta o caminho para os assets da arma selecionada.
 
         Args:

@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Dict, List, Literal, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union, Sequence
 from math import sin
 
+from pygame import Rect, Surface
 from pygame.time import get_ticks as get_time_ticks
 from pygame.sprite import AbstractGroup, Sprite
 from pygame.math import Vector2
@@ -16,10 +17,16 @@ class Entity(ABC, Sprite):
     funcionalidades comuns de ambos.
     """
 
+    hitbox: Rect
+    status: str
+    speed: int
+    animation_speed: float
+    _animations: Dict[str, Sequence[Surface]]
+
     def __init__(self,
                  position: Tuple[float, float],
                  groups: Union[List[AbstractGroup], AbstractGroup],
-                 handle_collisions: Callable[[str], None],) -> None:
+                 handle_collisions: Callable[["Entity", str], None],) -> None:
         """Inicializa a entidade com a posição, os grupos e a colisão
 
         Args:
@@ -93,7 +100,7 @@ class Entity(ABC, Sprite):
         self._handle_collisions(self, "vertical")
 
     @staticmethod
-    def _weave_value() -> Literal[255, 0]:
+    def _weave_value() -> int:
         """Método estático para gerar a oscilação utilizada no flicker.
         """
         value = sin(get_time_ticks())

@@ -19,13 +19,23 @@ class Enemy(Entity):
     realizadas e cooldowns.
     """
 
+    health: int
+    exp: int
+    damage: int
+    attack_type: str
+    attack_sound: str
+    speed: float
+    resistance: int
+    attack_radius: int
+    notice_radius: int
+
     def __init__(self,
                  position: Tuple[float, float],
                  groups: Union[List[AbstractGroup], AbstractGroup],
-                 handle_collisions: Callable[[str], None],
+                 handle_collisions: Callable[["Entity", str], None],
                  monster_name: str,
                  get_player_pos: Callable,
-                 inflict_damage_on_player: Callable[[float], None],
+                 inflict_damage_on_player: Callable[[float, str], None],
                  trigger_death_particles: Callable) -> None:
         """Inicializa a classe do inimigo.
 
@@ -43,7 +53,7 @@ class Enemy(Entity):
             get_player_pos (Callable):
                 função para pegar a posição atual do player
             inflict_damage_on_player (Callable[[float], None]):
-                função para inflingir dano ao player
+                função para infligir dano ao player
         """
         # Setup geral
         self.sprite_type = "enemy"
@@ -60,7 +70,7 @@ class Enemy(Entity):
         # Animações
         self.animation_speed = 0.15
 
-         # Colisão
+        # Colisão
         self.hitbox = self.rect.copy().inflate((0, -10))
 
         # Interação com o player
@@ -153,7 +163,8 @@ class Enemy(Entity):
 
         return direction
 
-    def __get_distance(self, player_pos: Vector2, enemy_pos: Vector2) -> float:
+    @staticmethod
+    def __get_distance(player_pos: Vector2, enemy_pos: Vector2) -> float:
         """Calcula a distância entre o inimigo e o player
 
         Args:
@@ -201,11 +212,15 @@ class Enemy(Entity):
         else:
             self.direction = Vector2()
 
-    def __check_death(self):
+    def __check_death(self) -> None:
+        """Elimina o sprite da tela quando a vida chega em zero.
+        """
         if self.health <= 0:
             self.kill()
 
     def __hit_reaction(self):
+        """Empurra o inimigo para trás quando recebe um ataque.
+        """
         if self._cooldowns["invincibility"].active:
             self.direction *= -self.resistance
 
@@ -231,5 +246,8 @@ class Enemy(Entity):
         self.__check_death()
 
     def kill(self) -> None:
+        """Sobrescreve o método kill do sprite para adiciona o efeito de
+        partículas.
+        """
         self.__trigger_death_particles(self.rect.center, self.monster_name)
         super().kill()

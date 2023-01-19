@@ -12,7 +12,7 @@ from zelda.src.elements.player import Player
 class CameraGroup(Group):
     """Câmera simples para movimentação do player.
 
-    Classe que repesenta a câmera baseada na posição em Y dos sprites.
+    Classe que representa a câmera baseada na posição em Y dos sprites.
     Levando em consideração a posição do player. Todo o cenário se move
     na tela em relação a posição do player, que está sempre no centro.
     """

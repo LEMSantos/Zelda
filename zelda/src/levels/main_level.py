@@ -86,7 +86,7 @@ class MainLevel(AbstractLevel):
                                 sprite_type="invisible",
                             )
 
-                        # Cria os objectos que são obstáculos visíveis
+                        # Cria os objetos que são obstáculos visíveis
                         # para o player
                         if style in ["grass", "object"]:
                             groups = [
@@ -96,7 +96,7 @@ class MainLevel(AbstractLevel):
 
                             if style == "object":
                                 surface = graphics[style][int(tile)]
-                            else :
+                            else:
                                 groups.append(self.attackable_sprites)
                                 surface = random_choice(graphics[style])
 
@@ -162,7 +162,7 @@ class MainLevel(AbstractLevel):
 
         Colisões podem ser horizontais ou verticais, cada uma delas
         possui uma forma de tratamento diferente e não devem ser
-        executadas simultâneamente no mesmo ciclo.
+        executadas simultaneamente no mesmo ciclo.
 
         Args:
             direction (str):

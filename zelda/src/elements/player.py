@@ -60,7 +60,7 @@ class Player(Entity):
     def __init__(self,
                  position: Tuple[float, float],
                  groups: Union[List[AbstractGroup], AbstractGroup],
-                 handle_collisions: Callable[[str], None],
+                 handle_collisions: Callable[["Entity", str], None],
                  create_attack: Callable,
                  destroy_attack: Callable,
                  create_magic: Callable) -> None:
@@ -221,34 +221,49 @@ class Player(Entity):
         }
 
     def __check_death(self) -> None:
+        """Verifica se o player morreu e executa uma ação em caso positivo.
+        """
         if self.health <= 0:
             print("morreu")
             exit(1)
 
     @property
-    def switching_weapon(self):
+    def switching_weapon(self) -> bool:
+        """Propriedade indicando se o player está trocando de arma.
+        """
         return self._cooldowns["change_weapon"].active
 
     @property
-    def switching_magic(self):
+    def switching_magic(self) -> bool:
+        """Propriedade indicando se o player está trocando de arma.
+        """
         return self._cooldowns["change_magic"].active
 
     def get_full_weapon_damage(self) -> int:
+        """Calcula o dano total do player ao utilizar armas.
+        """
         base_damage = self.stats["attack"]
         weapon_damage = WEAPON_DATA[self.weapon]["damage"]
 
         return base_damage + weapon_damage
 
     def get_full_magic_damage(self) -> int:
-        return 0
+        """Calcula o dano total do player ao utilizar magias.
+        """
+        return self.stats["magic"]
 
     def receive_damage(self, damage: float) -> None:
+        """Computa o dano total infligido oo player.
+
+        Args:
+            damage (float): dano infligido ao player
+        """
         if not self._cooldowns["invincibility"].active:
             self.health -= damage
             self._cooldowns["invincibility"].activate()
 
     def update(self) -> None:
-        """Método para atulização do sprite. Esse método é utilizado
+        """Método para atualização do sprite. Esse método é utilizado
         pelo grupo que ele pertence.
         """
         self.__handle_inputs()

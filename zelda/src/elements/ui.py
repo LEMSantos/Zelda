@@ -56,8 +56,8 @@ class UI:
             data=MAGIC_DATA,
         )
 
-    def __load_graphics(self,
-                        prefix: str,
+    @staticmethod
+    def __load_graphics(prefix: str,
                         data: Dict[str, Any]) -> List[Surface]:
         """Importa os gráficos de um determinado elemento
 

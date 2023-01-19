@@ -33,11 +33,12 @@ class Game:
         # Título da janela
         pygame.display.set_caption(GAME_TITLE)
 
-    def __handle_events(self) -> None:
+    @staticmethod
+    def __handle_events() -> None:
         for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
     def run(self) -> None:
         """Roda o loop principal necessário para trabalhar com pygame.

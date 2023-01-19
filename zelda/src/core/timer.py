@@ -14,7 +14,7 @@ class Timer:
     def __init__(self, duration: float, func: Callable = None) -> None:
         """Inicializa a classe timer.
 
-        A inicialização é feita zerando o tempo inicial e setando o
+        A inicialização é feita zerando o tempo inicial e colocando o
         timer como inativo inicialmente.
 
         Args:
