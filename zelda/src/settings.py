@@ -1,35 +1,36 @@
 from pathlib import Path
+from typing import Dict, Union
 
 BASE_PATH = str(Path().resolve()).replace('/zelda', '')
 
 GAME_TITLE = "Zelda"
 
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
-FPS = 60
-TILESIZE = 64
+SCREEN_WIDTH: int = 1280
+SCREEN_HEIGHT: int = 720
+FPS: int = 60
+TILESIZE: int = 64
 
 # Cores gerais
-WATER_COLOR = "#71ddee"
-TEXT_COLOR = "#EEEEEE"
+WATER_COLOR: str = "#71ddee"
+TEXT_COLOR: str = "#EEEEEE"
 
 # Parâmetros da UI
-UI_BAR_HEIGHT = 20
-UI_HEALTH_BAR_WIDTH = 200
-UI_ENERGY_BAR_WIDTH = 140
-UI_ITEM_BOX_SIZE = 80
-UI_FONT = f"{BASE_PATH}/graphics/font/joystix.ttf"
-UI_FONT_SIZE = 18
+UI_BAR_HEIGHT: int = 20
+UI_HEALTH_BAR_WIDTH: int = 200
+UI_ENERGY_BAR_WIDTH: int = 140
+UI_ITEM_BOX_SIZE: int = 80
+UI_FONT: str = f"{BASE_PATH}/graphics/font/joystix.ttf"
+UI_FONT_SIZE: int = 18
 
 # Cores da UI
-UI_BG_COLOR = "#222222"
-UI_BORDER_COLOR = "#111111"
-UI_HEALTH_COLOR = "red"
-UI_ENERGY_COLOR = "blue"
-UI_BORDER_COLOR_ACTIVE = "gold"
+UI_BG_COLOR: str = "#222222"
+UI_BORDER_COLOR: str = "#111111"
+UI_HEALTH_COLOR: str = "red"
+UI_ENERGY_COLOR: str = "blue"
+UI_BORDER_COLOR_ACTIVE: str = "gold"
 
 # Armas
-WEAPON_DATA = {
+WEAPON_DATA: Dict[str, Dict[str, Union[int, str]]] = {
     "sword": {"cooldown": 100, "damage": 15, "graphic": "sword/full.png"},
     "lance": {"cooldown": 400, "damage": 30, "graphic": "lance/full.png"},
     "axe": {"cooldown": 300, "damage": 20, "graphic": "axe/full.png"},
@@ -38,14 +39,14 @@ WEAPON_DATA = {
 }
 
 # Magias
-MAGIC_DATA = {
-    "flame": {"strength": 5,"cost": 20,"graphic":"flame/fire.png"},
-    "heal" : {"strength": 20,"cost": 10,"graphic":"heal/heal.png"},
+MAGIC_DATA: Dict[str, Dict[str, Union[int, str]]] = {
+    "flame": {"strength": 5, "cost": 20, "graphic": "flame/fire.png"},
+    "heal": {"strength": 20, "cost": 10, "graphic": "heal/heal.png"},
 }
 
 
 # Inimigos
-MONSTER_DATA = {
+MONSTER_DATA: Dict[str, Dict[str, Union[int, str]]] = {
     "squid": {
         "health": 100,
         "exp": 100,
