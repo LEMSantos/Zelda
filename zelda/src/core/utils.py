@@ -2,6 +2,7 @@ from os import walk
 from csv import reader
 from typing import Any, Dict, List, Union
 
+from pygame.transform import flip as flip_surface
 from pygame.image import load as load_image
 from pygame import Surface
 
@@ -64,3 +65,7 @@ def import_folder(
             )
 
     return surfaces
+
+
+def reflect_images(frames: List[Surface]) -> List[Surface]:
+    return [flip_surface(frame, True, False) for frame in frames]
