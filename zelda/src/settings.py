@@ -1,6 +1,6 @@
 from pathlib import Path
 
-BASE_PATH = Path().resolve()
+BASE_PATH = str(Path().resolve()).replace('/zelda', '')
 
 GAME_TITLE = "Zelda"
 
