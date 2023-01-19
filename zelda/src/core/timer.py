@@ -25,6 +25,7 @@ class Timer:
                 concluído. None por padrão.
         """
         self.duration = duration
+        self.__extended_duration = duration
         self.func = func
 
         self.start_time = 0
@@ -41,6 +42,16 @@ class Timer:
         """
         self.active = False
         self.start_time = 0
+        self.__extended_duration = self.duration
+
+    def extend_duration(self, extend_time: int) -> None:
+        """Aumenta a duração do timer já definido
+
+        Args:
+            extend_time (int):
+                tempo para extender a duração do timer
+        """
+        self.__extended_duration = self.duration + extend_time
 
     def update(self) -> None:
         """Atualiza o timer.
@@ -52,7 +63,7 @@ class Timer:
         """
         current_time = get_ticks()
 
-        if (current_time - self.start_time) >= self.duration:
+        if (current_time - self.start_time) >= self.__extended_duration:
             if self.func and self.start_time != 0:
                 self.func()
 
