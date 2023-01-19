@@ -5,9 +5,10 @@ from collections import defaultdict
 from pygame.sprite import AbstractGroup
 from pygame.math import Vector2
 
-from zelda.src.settings import MONSTER_DATA, BASE_PATH, TILESIZE, MAP_GRID
+from zelda.src.settings import MONSTER_DATA, BASE_PATH
 from zelda.src.core.utils import import_folder
 from zelda.src.elements.entity import Entity
+from zelda.src.elements.player import Player
 from zelda.src.core.timer import Timer
 
 
@@ -23,7 +24,9 @@ class Enemy(Entity):
                  groups: Union[List[AbstractGroup], AbstractGroup],
                  handle_collisions: Callable[[str], None],
                  monster_name: str,
-                 get_player_pos: Callable) -> None:
+                 get_player_pos: Callable,
+                 inflict_damage_on_player: Callable[[float], None],
+                 trigger_death_particles: Callable) -> None:
         """Inicializa a classe do inimigo.
 
         Args:
@@ -39,11 +42,15 @@ class Enemy(Entity):
                 nome do monstro considerado
             get_player_pos (Callable):
                 função para pegar a posição atual do player
+            inflict_damage_on_player (Callable[[float], None]):
+                função para inflingir dano ao player
         """
         # Setup geral
         self.sprite_type = "enemy"
         self.monster_name = monster_name
         self.__get_player_pos = get_player_pos
+        self.__inflict_damage_on_player = inflict_damage_on_player
+        self.__trigger_death_particles = trigger_death_particles
 
         # Estatísticas
         self.__dict__.update(MONSTER_DATA[monster_name])
@@ -123,6 +130,8 @@ class Enemy(Entity):
         self.image = animation[int(self._frame_index)]
         self.rect = self.image.get_rect(center=self.hitbox.center)
 
+        self._flicker()
+
     def __get_direction(self,
                         player_pos: Vector2,
                         enemy_pos: Vector2) -> Vector2:
@@ -186,14 +195,41 @@ class Enemy(Entity):
         """
         if self.status == "attack":
             self._cooldowns["attack"].activate()
-            print("attacking")
+            self.__inflict_damage_on_player(self.damage, self.attack_type)
         elif self.status == "move":
             _, self.direction = self.__get_player_distance_direction()
         else:
             self.direction = Vector2()
 
+    def __check_death(self):
+        if self.health <= 0:
+            self.kill()
+
+    def __hit_reaction(self):
+        if self._cooldowns["invincibility"].active:
+            self.direction *= -self.resistance
+
+    def receive_damage(self, player: Player, attack_type: str) -> None:
+        if not self._cooldowns["invincibility"].active:
+            _, self.direction = self.__get_player_distance_direction()
+
+            if attack_type == "weapon":
+                total_damage = player.get_full_weapon_damage()
+            else:
+                total_damage = player.get_full_magic_damage()
+
+            self.health -= total_damage
+            self._cooldowns["invincibility"].activate()
+
     def update(self) -> None:
         """Atualiza o sprite dos inimigos
         """
         self.__actions()
+        self.__hit_reaction()
         super().update()
+
+        self.__check_death()
+
+    def kill(self) -> None:
+        self.__trigger_death_particles(self.rect.center, self.monster_name)
+        super().kill()

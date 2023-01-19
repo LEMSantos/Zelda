@@ -1,13 +1,15 @@
-from random import choice as random_choice
+from random import choice as random_choice, randint
 from typing import Tuple, Union
+from itertools import chain
 
 import pygame
 
+from zelda.src.core.particle_effect import AnimationPlayer
 from zelda.src.core.utils import import_csv, import_folder
 from zelda.src.levels.abstract_level import AbstractLevel
-from zelda.src.elements.weapon import Weapon
 from zelda.src.settings import BASE_PATH, TILESIZE
 from zelda.src.core.camera import CameraGroup
+from zelda.src.elements.weapon import Weapon
 from zelda.src.elements.player import Player
 from zelda.src.elements.entity import Entity
 from zelda.src.elements.enemy import Enemy
@@ -25,15 +27,21 @@ class MainLevel(AbstractLevel):
         # Setup dos grupos de sprites
         self.visible_sprites = CameraGroup()
         self.obstacle_sprites = pygame.sprite.Group()
+        self.attackable_sprites = pygame.sprite.Group()
+        self.attack_sprites = pygame.sprite.Group()
 
         # Setup dos sprites
         self.__create_map()
 
         # Sprites de ataque
         self.current_attack = None
+        self.current_attack_type = None
 
         # Interface do usuário
         self.ui = UI()
+
+        # Particles
+        self.animation_player = AnimationPlayer()
 
     def __create_map(self) -> None:
         """Método que instância os elementos do mapa em seus devidos
@@ -81,18 +89,20 @@ class MainLevel(AbstractLevel):
                         # Cria os objectos que são obstáculos visíveis
                         # para o player
                         if style in ["grass", "object"]:
-                            surface = (
-                                random_choice(graphics[style])
-                                if style == "grass" else
-                                graphics[style][int(tile)]
-                            )
+                            groups = [
+                                self.visible_sprites,
+                                self.obstacle_sprites,
+                            ]
+
+                            if style == "object":
+                                surface = graphics[style][int(tile)]
+                            else :
+                                groups.append(self.attackable_sprites)
+                                surface = random_choice(graphics[style])
 
                             Tile(
                                 position=(x, y),
-                                groups=[
-                                    self.visible_sprites,
-                                    self.obstacle_sprites,
-                                ],
+                                groups=groups,
                                 sprite_type=style,
                                 surface=surface,
                             )
@@ -111,16 +121,25 @@ class MainLevel(AbstractLevel):
                             if tile in enemy_names.keys():
                                 Enemy(
                                     position=(x, y),
-                                    groups=[self.visible_sprites],
+                                    groups=[
+                                        self.visible_sprites,
+                                        self.attackable_sprites,
+                                    ],
                                     handle_collisions=self.__handle_collisions,
                                     monster_name=enemy_names[tile],
-                                    get_player_pos=self.__get_player_pos
+                                    get_player_pos=self.__get_player_pos,
+                                    inflict_damage_on_player=self.__inflict_damage_on_player,
+                                    trigger_death_particles=self.__trigger_death_particles,
                                 )
 
     def __create_attack(self) -> None:
         """Cria a arma selecionada pelo player na tela.
         """
-        self.current_attack = Weapon(self.player, [self.visible_sprites])
+        self.current_attack_type = "weapon"
+        self.current_attack = Weapon(
+            self.player,
+            [self.visible_sprites, self.attack_sprites],
+        )
 
     def __destroy_attack(self) -> None:
         """Destroi o ataque corrente se ele já tiver sido previamente
@@ -130,8 +149,10 @@ class MainLevel(AbstractLevel):
             self.current_attack.kill()
 
         self.current_attack = None
+        self.current_attack_type = None
 
     def __create_magic(self, style: str, strength: int, cost: int) -> None:
+        self.current_attack_type = "magic"
         print((style, strength, cost))
 
     def __handle_collisions(self,
@@ -178,8 +199,56 @@ class MainLevel(AbstractLevel):
         if hasattr(self, "player"):
             return self.player.rect.center
 
+    def __inflict_damage_on_player(self,
+                                   damage: float,
+                                   attack_type: str) -> None:
+        self.player.receive_damage(damage)
+
+        self.animation_player.create_particles(
+            name=attack_type,
+            position=self.player.rect.center,
+            groups=[self.visible_sprites],
+        )
+
+    def __trigger_death_particles(self,
+                                  position: Tuple[int, int],
+                                  particle_type: str) -> None:
+        self.animation_player.create_particles(
+            name=particle_type,
+            position=position,
+            groups=[self.visible_sprites],
+        )
+
+    def __player_attack_logic(self):
+        if self.attack_sprites:
+            collide_list = chain(*pygame.sprite.groupcollide(
+                self.attack_sprites,
+                self.attackable_sprites,
+                False,
+                False,
+            ).values())
+
+            for collided in collide_list:
+                if isinstance(collided, Tile):
+                    collided.kill()
+
+                    offset = pygame.math.Vector2(0, 75)
+                    for _ in range(randint(3, 6)):
+                        self.animation_player.create_particles(
+                            name="leaf",
+                            position=collided.rect.center - offset,
+                            groups=[self.visible_sprites],
+                        )
+
+                if isinstance(collided, Enemy):
+                    collided.receive_damage(
+                        self.player,
+                        self.current_attack_type,
+                    )
+
     def run(self) -> None:
         self.visible_sprites.update()
         self.visible_sprites.custom_draw(self.display_surface, self.player)
+        self.__player_attack_logic()
 
         self.ui.display(self.player)

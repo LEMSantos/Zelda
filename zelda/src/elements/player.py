@@ -147,6 +147,9 @@ class Player(Entity):
                     self.status = movement.status
 
             if pressed_keys[K_SPACE]:
+                weapon_cooldown = WEAPON_DATA[self.weapon]["cooldown"]
+                self._cooldowns["attack"].extend_duration(weapon_cooldown)
+
                 self._frame_index = 0
                 self._cooldowns["attack"].activate()
                 self.__create_attack()
@@ -217,6 +220,11 @@ class Player(Entity):
             "change_magic": Timer(200),
         }
 
+    def __check_death(self) -> None:
+        if self.health <= 0:
+            print("morreu")
+            exit(1)
+
     @property
     def switching_weapon(self):
         return self._cooldowns["change_weapon"].active
@@ -225,9 +233,25 @@ class Player(Entity):
     def switching_magic(self):
         return self._cooldowns["change_magic"].active
 
+    def get_full_weapon_damage(self) -> int:
+        base_damage = self.stats["attack"]
+        weapon_damage = WEAPON_DATA[self.weapon]["damage"]
+
+        return base_damage + weapon_damage
+
+    def get_full_magic_damage(self) -> int:
+        return 0
+
+    def receive_damage(self, damage: float) -> None:
+        if not self._cooldowns["invincibility"].active:
+            self.health -= damage
+            self._cooldowns["invincibility"].activate()
+
     def update(self) -> None:
         """Método para atulização do sprite. Esse método é utilizado
         pelo grupo que ele pertence.
         """
         self.__handle_inputs()
         super().update()
+
+        # self.__check_death()
