@@ -43,17 +43,6 @@ class Movement:
     status: str
 
 
-class Action:
-    """Classe para representar uma ação possível do player
-
-    Args:
-        key (int): código da tecla mapeada na ação
-        name (str): nome da ação que será executada
-    """
-    key: int
-    name: str
-
-
 class Player(Entity):
     """Sprite que representa o player do jogo.
 
