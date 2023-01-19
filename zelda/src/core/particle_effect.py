@@ -9,8 +9,16 @@ from zelda.src.settings import BASE_PATH
 
 
 class AnimationPlayer:
+    """Classe para lidar com a criação de efeitos.
+
+    Esse player é responsável por gerenciar os efeitos de partículas
+    presentes no jogo, servindo como uma armazenamento em memória, evitando
+    assim lentidão na execução do jogo.
+    """
 
     def __init__(self) -> None:
+        """Inicializa a classe que executa os efeitos de partículas.
+        """
         _path = f"{BASE_PATH}/graphics/particles"
 
         self.__frames = {
@@ -53,8 +61,20 @@ class AnimationPlayer:
         self,
         name: str,
         position: Tuple[int, int],
-        groups: Union[AbstractGroup, Sequence[AbstractGroup]]
+        groups: Union[AbstractGroup, Sequence[AbstractGroup]],
     ) -> None:
+        """Cria o efeito de partícula designado pelo parâmetro
+        name.
+
+        Args:
+            name (str):
+                nome do efeito que será renderizado
+            position (Tuple[int, int]):
+                posição onde o efeito será renderizado
+            groups (Union[AbstractGroup, Sequence[AbstractGroup]]):
+                grupos em que o ParticleEffect deve ser colocado quando
+                existir
+        """
         animation_frames = self.__frames[name]
 
         if isinstance(self.__frames[name], tuple):
@@ -97,6 +117,8 @@ class ParticleEffect(Sprite):
         self.rect = self.image.get_rect(center=position)
 
     def __animate(self) -> None:
+        """Itera sobre os sprites passados para a instância
+        """
         self.__frame_index += self.__animation_speed
 
         if self.__frame_index >= len(self.__frames):
