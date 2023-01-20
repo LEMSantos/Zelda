@@ -45,6 +45,7 @@ class MainLevel(AbstractLevel):
 
         # Particles
         self.animation_player = AnimationPlayer()
+        self.magic_player = MagicPlayer(self.animation_player)
 
     def __create_map(self) -> None:
         """Método que instância os elementos do mapa em seus devidos
@@ -163,7 +164,21 @@ class MainLevel(AbstractLevel):
             cost (int): custo de uso da magia
         """
         self.current_attack_type = "magic"
-        print((style, strength, cost))
+
+        if style == "flame":
+            self.magic_player.flame(
+                player=self.player,
+                cost=cost,
+                groups=[self.visible_sprites, self.attack_sprites],
+            )
+
+        if style == "heal":
+            self.magic_player.heal(
+                player=self.player,
+                strength=strength,
+                cost=cost,
+                groups=[self.visible_sprites],
+            )
 
     def __handle_collisions(self,
                             target: Entity,
