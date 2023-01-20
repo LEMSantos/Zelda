@@ -40,7 +40,7 @@ WEAPON_DATA: Dict[str, Dict[str, Union[int, str]]] = {
 
 # Magias
 MAGIC_DATA: Dict[str, Dict[str, Union[int, str]]] = {
-    "flame": {"strength": 5, "cost": 20, "graphic": "flame/fire.png"},
+    "flame": {"strength": 50, "cost": 20, "graphic": "flame/fire.png"},
     "heal": {"strength": 20, "cost": 10, "graphic": "heal/heal.png"},
 }
 
