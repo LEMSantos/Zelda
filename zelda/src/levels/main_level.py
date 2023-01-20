@@ -155,6 +155,13 @@ class MainLevel(AbstractLevel):
         self.current_attack_type = None
 
     def __create_magic(self, style: str, strength: int, cost: int) -> None:
+        """Gera os efeitos da magia.
+
+        Args:
+            style (str): identificador da animação
+            strength (int): força de uso da magia
+            cost (int): custo de uso da magia
+        """
         self.current_attack_type = "magic"
         print((style, strength, cost))
 
@@ -199,12 +206,23 @@ class MainLevel(AbstractLevel):
                     target.rect.centery = target.hitbox.centery
 
     def __get_player_pos(self) -> Union[Tuple[int, int], None]:
+        """Retorna a posição corrente do player no mapa.
+
+        Returns:
+            Union[Tuple[int, int], None]: posição atual do player
+        """
         if hasattr(self, "player"):
             return self.player.rect.center
 
     def __inflict_damage_on_player(self,
                                    damage: float,
                                    attack_type: str) -> None:
+        """Aplica dano ao player.
+
+        Args:
+            damage (float): dano infligido
+            attack_type (str): tipo da animação de ataque
+        """
         self.player.receive_damage(damage)
 
         self.animation_player.create_particles(
@@ -216,13 +234,23 @@ class MainLevel(AbstractLevel):
     def __trigger_death_particles(self,
                                   position: Tuple[int, int],
                                   particle_type: str) -> None:
+        """Cria a animação de morte dos monstros.
+
+        Args:
+            position (Tuple[int, int]):
+                posição onde o efeito deve ser renderizado
+            particle_type (str):
+                identificador para o efeito
+        """
         self.animation_player.create_particles(
             name=particle_type,
             position=position,
             groups=[self.visible_sprites],
         )
 
-    def __player_attack_logic(self):
+    def __player_attack_logic(self) -> None:
+        """Implementa a lógica de ataque do player.
+        """
         if self.attack_sprites:
             collide_list = chain(*groupcollide(
                 self.attack_sprites,
@@ -235,7 +263,7 @@ class MainLevel(AbstractLevel):
                 if isinstance(collided, Tile):
                     collided.kill()
 
-                    offset = pygame.math.Vector2(0, 75)
+                    offset = Vector2(0, 75)
                     for _ in range(randint(3, 6)):
                         self.animation_player.create_particles(
                             name="leaf",
