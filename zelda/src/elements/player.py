@@ -275,7 +275,10 @@ class Player(Entity):
     def get_full_magic_damage(self) -> int:
         """Calcula o dano total do player ao utilizar magias.
         """
-        return self.stats["magic"]
+        base_damage = self.stats["magic"]
+        spell_damage = MAGIC_DATA[self.magic]["strength"]
+
+        return base_damage + spell_damage
 
     def receive_damage(self, damage: float) -> None:
         """Computa o dano total infligido oo player.
