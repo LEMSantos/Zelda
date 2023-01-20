@@ -1,34 +1,37 @@
+from itertools import chain
 from random import choice as random_choice, randint
 from typing import Tuple, Union
-from itertools import chain
 
-import pygame
+from pygame import Surface
+from pygame.math import Vector2
+from pygame.sprite import Group, groupcollide
 
+from zelda.src.core.camera import CameraGroup
 from zelda.src.core.particle_effect import AnimationPlayer
 from zelda.src.core.utils import import_csv, import_folder
-from zelda.src.levels.abstract_level import AbstractLevel
-from zelda.src.settings import BASE_PATH, TILESIZE
-from zelda.src.core.camera import CameraGroup
-from zelda.src.elements.weapon import Weapon
-from zelda.src.elements.player import Player
-from zelda.src.elements.entity import Entity
 from zelda.src.elements.enemy import Enemy
+from zelda.src.elements.entity import Entity
+from zelda.src.elements.magic import MagicPlayer
+from zelda.src.elements.player import Player
 from zelda.src.elements.tile import Tile
 from zelda.src.elements.ui import UI
+from zelda.src.elements.weapon import Weapon
+from zelda.src.levels.abstract_level import AbstractLevel
+from zelda.src.settings import BASE_PATH, TILESIZE
 
 
 class MainLevel(AbstractLevel):
     """Level principal, o primeiro quando o jogo começa.
     """
 
-    def __init__(self, screen: pygame.Surface) -> None:
+    def __init__(self, screen: Surface) -> None:
         super().__init__(screen)
 
         # Setup dos grupos de sprites
         self.visible_sprites = CameraGroup()
-        self.obstacle_sprites = pygame.sprite.Group()
-        self.attackable_sprites = pygame.sprite.Group()
-        self.attack_sprites = pygame.sprite.Group()
+        self.obstacle_sprites = Group()
+        self.attackable_sprites = Group()
+        self.attack_sprites = Group()
 
         # Setup dos sprites
         self.__create_map()
@@ -221,7 +224,7 @@ class MainLevel(AbstractLevel):
 
     def __player_attack_logic(self):
         if self.attack_sprites:
-            collide_list = chain(*pygame.sprite.groupcollide(
+            collide_list = chain(*groupcollide(
                 self.attack_sprites,
                 self.attackable_sprites,
                 False,
