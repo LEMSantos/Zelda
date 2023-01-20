@@ -290,6 +290,14 @@ class Player(Entity):
             self.health -= damage
             self._cooldowns["invincibility"].activate()
 
+    def energy_recovery(self) -> None:
+        """Recupera lentamente a energia do player.
+        """
+        self.energy += 0.005 * self.stats["magic"]
+
+        if self.energy >= self.stats["energy"]:
+            self.energy = self.stats["energy"]
+
     def update(self) -> None:
         """Método para atualização do sprite. Esse método é utilizado
         pelo grupo que ele pertence.
@@ -297,4 +305,5 @@ class Player(Entity):
         self.__handle_inputs()
         super().update()
 
+        self.energy_recovery()
         # self.__check_death()
