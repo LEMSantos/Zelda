@@ -24,6 +24,7 @@ from zelda.src.settings import (
     BASE_PATH,
     WEAPON_DATA,
     MAGIC_DATA,
+    PLAYER_MAX_STATS,
 )
 
 
@@ -282,6 +283,13 @@ class Player(Entity):
 
     def get_stats(self, name: str) -> Any:
         return self.__stats[name]
+
+    def set_stats(self, key: str, value: float) -> None:
+        if key in self.__stats and value < self.__stats[key]:
+            self.__stats[key] = value
+
+            if self.__stats[key] > PLAYER_MAX_STATS[key]:
+                self.__stats[key] = PLAYER_MAX_STATS[key]
 
     def receive_damage(self, damage: float) -> None:
         """Computa o dano total infligido oo player.
