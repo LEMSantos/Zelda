@@ -76,6 +76,15 @@ class Enemy(Entity):
         # Interação com o player
         self.can_attack = True
 
+    @property
+    def alive(self) -> bool:
+        """Propriedade para indicar se o inimigo está vivo.
+
+        Returns:
+            bool: indicativo se o inimigo está vivo ou não
+        """
+        return self.health > 0
+
     def _import_assets(self) -> None:
         """importa todos os assets do inimigo, condicional ao nome dele,
         presentes no pasta graphics/monsters/{monster_name} e gera um

@@ -292,6 +292,9 @@ class MainLevel(AbstractLevel):
                         self.current_attack_type,
                     )
 
+                    if not collided.alive:
+                        self.player.exp += collided.exp
+
     def run(self) -> None:
         self.visible_sprites.update()
         self.visible_sprites.custom_draw(self.display_surface, self.player)
