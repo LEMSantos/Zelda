@@ -2,6 +2,7 @@ import os
 from typing import Callable, Dict, List, Tuple, Union
 from collections import defaultdict
 
+from pygame.mixer import Sound
 from pygame.sprite import AbstractGroup
 from pygame.math import Vector2
 
@@ -75,6 +76,16 @@ class Enemy(Entity):
 
         # Interação com o player
         self.can_attack = True
+
+        # Sons
+        self.sounds = {
+            "death": Sound(f"{BASE_PATH}/audio/death.wav"),
+            "hit": Sound(f"{BASE_PATH}/audio/hit.wav"),
+            "attack": Sound(self.attack_sound),
+        }
+
+        for sound in self.sounds.values():
+            sound.set_volume(0.05)
 
     @property
     def alive(self) -> bool:
@@ -216,6 +227,7 @@ class Enemy(Entity):
         if self.status == "attack":
             self._cooldowns["attack"].activate()
             self.__inflict_damage_on_player(self.damage, self.attack_type)
+            self.sounds["attack"].play()
         elif self.status == "move":
             _, self.direction = self.__get_player_distance_direction()
         else:
@@ -225,6 +237,7 @@ class Enemy(Entity):
         """Elimina o sprite da tela quando a vida chega em zero.
         """
         if self.health <= 0:
+            self.sounds["death"].play()
             self.kill()
 
     def __hit_reaction(self):
@@ -244,6 +257,8 @@ class Enemy(Entity):
 
             self.health -= total_damage
             self._cooldowns["invincibility"].activate()
+
+            self.sounds["hit"].play()
 
     def update(self) -> None:
         """Atualiza o sprite dos inimigos

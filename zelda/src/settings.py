@@ -10,6 +10,13 @@ SCREEN_HEIGHT: int = 720
 FPS: int = 60
 TILESIZE: int = 64
 
+HITBOX_OFFSET: Dict[str, int] = {
+    "player": -26,
+    "object": -40,
+    "grass": -10,
+    "invisible": 0,
+}
+
 # Cores gerais
 WATER_COLOR: str = "#71ddee"
 TEXT_COLOR: str = "#EEEEEE"
@@ -28,6 +35,12 @@ UI_BORDER_COLOR: str = "#111111"
 UI_HEALTH_COLOR: str = "red"
 UI_ENERGY_COLOR: str = "blue"
 UI_BORDER_COLOR_ACTIVE: str = "gold"
+
+# Menu de upgrade
+TEXT_COLOR_SELECTED = '#111111'
+BAR_COLOR = '#EEEEEE'
+BAR_COLOR_SELECTED = '#111111'
+UPGRADE_BG_COLOR_SELECTED = '#EEEEEE'
 
 # Armas
 WEAPON_DATA: Dict[str, Dict[str, Union[int, str]]] = {
@@ -98,5 +111,13 @@ PLAYER_MAX_STATS: Dict[str, int] = {
     "energy": 140,
     "attack": 20,
     "magic": 10,
-    "speed": 12,
+    "speed": 10,
+}
+
+UPGRADE_COST: Dict[str, int] = {
+    "health": 100,
+    "energy": 100,
+    "attack": 100,
+    "magic": 100,
+    "speed": 100,
 }

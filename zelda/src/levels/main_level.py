@@ -18,6 +18,7 @@ from zelda.src.elements.ui import UI
 from zelda.src.elements.weapon import Weapon
 from zelda.src.levels.abstract_level import AbstractLevel
 from zelda.src.settings import BASE_PATH, TILESIZE
+from zelda.src.elements.upgrade import UpgradeMenu
 
 
 class MainLevel(AbstractLevel):
@@ -42,6 +43,8 @@ class MainLevel(AbstractLevel):
 
         # Interface do usuário
         self.ui = UI()
+        self.upgrade_menu = UpgradeMenu(self.player)
+        self.game_paused = False
 
         # Particles
         self.animation_player = AnimationPlayer()
@@ -295,9 +298,16 @@ class MainLevel(AbstractLevel):
                     if not collided.alive:
                         self.player.exp += collided.exp
 
-    def run(self) -> None:
-        self.visible_sprites.update()
-        self.visible_sprites.custom_draw(self.display_surface, self.player)
-        self.__player_attack_logic()
+    def toggle_menu(self) -> None:
+        self.game_paused = not self.game_paused
 
+    def run(self) -> None:
+        self.visible_sprites.custom_draw(self.display_surface, self.player)
         self.ui.display(self.player)
+
+        if self.game_paused:
+            self.upgrade_menu.display()
+            return
+
+        self.visible_sprites.update()
+        self.__player_attack_logic()

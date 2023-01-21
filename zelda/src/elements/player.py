@@ -4,6 +4,7 @@ from collections import defaultdict
 from typing import Callable, Dict, List, Tuple, Union, Any
 
 from pygame.math import Vector2
+from pygame.mixer import Sound
 from pygame.sprite import AbstractGroup
 from pygame.key import get_pressed as get_pressed_keys
 from pygame import (
@@ -25,6 +26,7 @@ from zelda.src.settings import (
     WEAPON_DATA,
     MAGIC_DATA,
     PLAYER_MAX_STATS,
+    HITBOX_OFFSET,
 )
 
 
@@ -92,7 +94,7 @@ class Player(Entity):
         self.animation_speed = 0.1
 
         # Colisão
-        self.hitbox = self.rect.copy().inflate((0, -26))
+        self.hitbox = self.rect.copy().inflate((-6, HITBOX_OFFSET["player"]))
 
         # Armas
         self.weapon_index = 0
@@ -116,6 +118,10 @@ class Player(Entity):
         self.energy = self.__stats["energy"]
         self.speed = self.__stats["speed"]
         self.exp = 100
+
+        # Sons
+        self.__weapon_attack_sound = Sound(f"{BASE_PATH}/audio/sword.wav")
+        self.__weapon_attack_sound.set_volume(0.1)
 
     @property
     def health(self) -> float:
@@ -179,6 +185,7 @@ class Player(Entity):
                 self._frame_index = 0
                 self._cooldowns["attack"].activate()
                 self.__create_attack()
+                self.__weapon_attack_sound.play()
 
             if pressed_keys[K_LCTRL]:
                 self._frame_index = 0
@@ -284,12 +291,19 @@ class Player(Entity):
     def get_stats(self, name: str) -> Any:
         return self.__stats[name]
 
-    def set_stats(self, key: str, value: float) -> None:
-        if key in self.__stats and value < self.__stats[key]:
+    def set_stats(self, key: str, value: float) -> bool:
+        changed = False
+
+        if key in self.__stats:
+            if self.__stats[key] < PLAYER_MAX_STATS[key]:
+                changed = True
+
             self.__stats[key] = value
 
-            if self.__stats[key] > PLAYER_MAX_STATS[key]:
+            if self.__stats[key] >= PLAYER_MAX_STATS[key]:
                 self.__stats[key] = PLAYER_MAX_STATS[key]
+
+        return changed
 
     def receive_damage(self, damage: float) -> None:
         """Computa o dano total infligido oo player.
@@ -304,7 +318,7 @@ class Player(Entity):
     def energy_recovery(self) -> None:
         """Recupera lentamente a energia do player.
         """
-        self.energy += 0.005 * self.__stats["magic"]
+        self.energy += 0.01 * self.__stats["magic"]
 
         if self.energy >= self.__stats["energy"]:
             self.energy = self.__stats["energy"]
@@ -313,6 +327,8 @@ class Player(Entity):
         """Método para atualização do sprite. Esse método é utilizado
         pelo grupo que ele pertence.
         """
+        self.speed = self.__stats["speed"]
+
         self.__handle_inputs()
         super().update()
 

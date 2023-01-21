@@ -1,13 +1,16 @@
 import sys
 
 import pygame
+from pygame.mixer import Sound
 
 from zelda.src.levels.main_level import MainLevel
 from zelda.src.settings import (
+    BASE_PATH,
     GAME_TITLE,
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
     FPS,
+    WATER_COLOR,
 )
 
 
@@ -33,12 +36,22 @@ class Game:
         # Título da janela
         pygame.display.set_caption(GAME_TITLE)
 
-    @staticmethod
-    def __handle_events() -> None:
+        # Som
+        main_sound = Sound(f"{BASE_PATH}/audio/main.ogg")
+        main_sound.set_volume(0.1)
+        main_sound.play(loops=-1)
+
+    def __handle_events(self) -> None:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+
+            if (
+                event.type == pygame.KEYDOWN
+                and event.key == pygame.K_m
+            ):
+                self.current_level.toggle_menu()
 
     def run(self) -> None:
         """Roda o loop principal necessário para trabalhar com pygame.
@@ -50,7 +63,7 @@ class Game:
         while True:
             self.__handle_events()
 
-            self.screen.fill("black")
+            self.screen.fill(WATER_COLOR)
             self.current_level.run()
 
             pygame.display.update()

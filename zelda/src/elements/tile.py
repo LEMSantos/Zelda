@@ -3,7 +3,7 @@ from typing import List, Tuple, Union
 from pygame import Surface
 from pygame.sprite import Sprite, AbstractGroup
 
-from zelda.src.settings import TILESIZE
+from zelda.src.settings import TILESIZE, HITBOX_OFFSET
 
 
 class Tile(Sprite):
@@ -41,4 +41,4 @@ class Tile(Sprite):
             )
 
         # Colisão
-        self.hitbox = self.rect.copy().inflate((0, -10))
+        self.hitbox = self.rect.copy().inflate((0, HITBOX_OFFSET[sprite_type]))

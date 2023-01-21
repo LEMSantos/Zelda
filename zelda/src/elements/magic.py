@@ -3,8 +3,9 @@ from typing import Union, List
 
 from pygame.math import Vector2
 from pygame.sprite import AbstractGroup
+from pygame.mixer import Sound
 
-from zelda.src.settings import TILESIZE
+from zelda.src.settings import TILESIZE, BASE_PATH
 from zelda.src.elements.player import Player
 from zelda.src.core.particle_effect import AnimationPlayer
 
@@ -25,6 +26,12 @@ class MagicPlayer:
                 player responsável por executar as animações das partículas
         """
         self.__animation_player = animation_player
+
+        self.__heal_sound = Sound(f"{BASE_PATH}/audio/heal.wav")
+        self.__flame_sound = Sound(f"{BASE_PATH}/audio/flame.wav")
+
+        self.__heal_sound.set_volume(0.3)
+        self.__flame_sound.set_volume(0.2)
 
     def heal(self,
              player: Player,
@@ -59,6 +66,8 @@ class MagicPlayer:
                 position=player.rect.center,
                 groups=groups,
             )
+
+            self.__heal_sound.play()
 
     def flame(self,
               player: Player,
@@ -96,3 +105,5 @@ class MagicPlayer:
                     position=player.rect.center + flame_offset,
                     groups=groups,
                 )
+
+            self.__flame_sound.play()
