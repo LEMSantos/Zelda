@@ -190,14 +190,14 @@ class UI:
         """
         self.show_bar(
             current=player.health,
-            max_amount=player.stats["health"],
+            max_amount=player.get_stats("health"),
             bg_rect=self.health_bar_rect,
             color=UI_HEALTH_COLOR,
         )
 
         self.show_bar(
             current=player.energy,
-            max_amount=player.stats["energy"],
+            max_amount=player.get_stats("energy"),
             bg_rect=self.energy_bar_rect,
             color=UI_ENERGY_COLOR,
         )

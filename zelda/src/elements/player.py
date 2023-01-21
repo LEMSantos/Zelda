@@ -1,7 +1,7 @@
 import os
 from dataclasses import dataclass
 from collections import defaultdict
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Tuple, Union, Any
 
 from pygame.math import Vector2
 from pygame.sprite import AbstractGroup
@@ -103,7 +103,7 @@ class Player(Entity):
         self.magic = list(MAGIC_DATA.keys())[self.magic_index]
 
         # Estatísticas
-        self.stats = {
+        self.__stats = {
             "health": 100,
             "energy": 60,
             "attack": 10,
@@ -111,9 +111,9 @@ class Player(Entity):
             "speed": 6,
         }
 
-        self.__health = self.stats["health"]
-        self.energy = self.stats["energy"]
-        self.speed = self.stats["speed"]
+        self.__health = self.__stats["health"]
+        self.energy = self.__stats["energy"]
+        self.speed = self.__stats["speed"]
         self.exp = 100
 
     @property
@@ -138,8 +138,8 @@ class Player(Entity):
         if self.__health <= 0:
             self.__health = 0
 
-        if self.__health >= self.stats["health"]:
-            self.__health = self.stats["health"]
+        if self.__health >= self.__stats["health"]:
+            self.__health = self.__stats["health"]
 
     def _import_assets(self) -> None:
         """importa todos os assets do player presentes na pasta
@@ -186,7 +186,7 @@ class Player(Entity):
                     style=self.magic,
                     strength=(
                         MAGIC_DATA[self.magic]["strength"]
-                        + self.stats["magic"]
+                        + self.__stats["magic"]
                     ),
                     cost=MAGIC_DATA[self.magic]["cost"]
                 )
@@ -267,7 +267,7 @@ class Player(Entity):
     def get_full_weapon_damage(self) -> int:
         """Calcula o dano total do player ao utilizar armas.
         """
-        base_damage = self.stats["attack"]
+        base_damage = self.__stats["attack"]
         weapon_damage = WEAPON_DATA[self.weapon]["damage"]
 
         return base_damage + weapon_damage
@@ -275,10 +275,13 @@ class Player(Entity):
     def get_full_magic_damage(self) -> int:
         """Calcula o dano total do player ao utilizar magias.
         """
-        base_damage = self.stats["magic"]
+        base_damage = self.__stats["magic"]
         spell_damage = MAGIC_DATA[self.magic]["strength"]
 
         return base_damage + spell_damage
+
+    def get_stats(self, name: str) -> Any:
+        return self.__stats[name]
 
     def receive_damage(self, damage: float) -> None:
         """Computa o dano total infligido oo player.
@@ -293,10 +296,10 @@ class Player(Entity):
     def energy_recovery(self) -> None:
         """Recupera lentamente a energia do player.
         """
-        self.energy += 0.005 * self.stats["magic"]
+        self.energy += 0.005 * self.__stats["magic"]
 
-        if self.energy >= self.stats["energy"]:
-            self.energy = self.stats["energy"]
+        if self.energy >= self.__stats["energy"]:
+            self.energy = self.__stats["energy"]
 
     def update(self) -> None:
         """Método para atualização do sprite. Esse método é utilizado
