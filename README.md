@@ -4,6 +4,9 @@ Zelda
 Implementação de uma versão simplificada do jogo [Zelda](https://www.nintendo.pt/Jogos/Portal-Nintendo/Portal-The-Legend-of-Zelda/Portal-The-Legend-of-Zelda-627606.html) utilizando a biblioteca [Pygame](http://www.pygame.org). O jogo abarca alguns do elementos principais como:
 
 - Uso de diferentes armas
+- Diferentes tipos de inimigos
+- Uso de magia
+- Sistema de upgrade de stats
 
 dentre outos elementos interessantes.
 
